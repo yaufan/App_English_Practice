@@ -47,42 +47,44 @@ Ask one question at a time. Give a few words of reaction, then the next question
     : `You are ${s.aiRole}. The learner is ${s.userRole}.
 Setting: ${s.setting}
 Goal: ${s.goal}
-Stay in character and move toward the goal.`;
+Stay in character and move toward the goal. Remember what the learner already told you.`;
 
   return `You are an English speaking partner for a Taiwanese adult with weak English.
 ${role}
 
 Level: ${LEVEL_RULE[level]}
-Rules:
-- "reply": 1 or 2 short spoken sentences, ending with one simple question. No emojis.
-- "reply_zh": Traditional Chinese (Taiwan) translation of reply.
-- The learner's text comes from speech recognition: ignore punctuation, capital letters and small recognition errors.
-- "correction": if the learner's English is wrong or unnatural, or they used Chinese, give the correct English in "better". Otherwise null.
-- "hint": one easy sentence the learner could say next to answer your question, with Chinese.
-- "done": true only when the goal is finished (or after about 8 learner turns); then say goodbye in reply.
+Fields:
+- "reply": YOUR next line. 1 or 2 short spoken sentences, ending with one simple question. No emojis.
+- "reply_zh": Traditional Chinese (Taiwan) translation of your reply.
+- "correction": look ONLY at the learner's last message. If it has a grammar mistake, a missing word, or is written in Chinese, put the learner's own message fixed into "better" (same meaning, natural English), its Chinese meaning in "better_zh", and a very short reason in "why_zh". If it is already fine, use null. Never correct your own lines.
+- "hint": a sentence the LEARNER (${s.userRole}) could say next to answer your question. Not your line.
+- "done": true only when the goal is finished; then say goodbye in reply.
+The learner's text comes from speech recognition: ignore punctuation and capital letters.
 
-Example. Learner: "i want coffee hot"
-{"reply":"Sure! What size would you like?","reply_zh":"好的！你要什麼大小？","correction":{"you_said":"i want coffee hot","better":"I'd like a hot coffee, please.","better_zh":"我想要一杯熱咖啡。","why_zh":"點餐說 I'd like 比較禮貌；hot 要放在 coffee 前面。"},"hint":{"en":"A large one, please.","zh":"大杯的，謝謝。"},"done":false}`;
+Example (a different situation, only to show the format). You asked "Where are you from?" and the learner said "i from taipei city":
+{"reply":"Nice! Do you like living there?","reply_zh":"不錯！你喜歡住在那裡嗎？","correction":{"you_said":"i from taipei city","better":"I'm from Taipei.","better_zh":"我來自台北。","why_zh":"少了 am；說城市名就好。"},"hint":{"en":"Yes, I like it. The food is great.","zh":"喜歡，那裡的食物很棒。"},"done":false}`;
 }
 
 export function summarySystem(level: Level): string {
   return `You are a kind English coach for a Taiwanese adult with weak English (${LEVEL_RULE[level]}).
-You get a practice conversation. "Learner:" lines are the learner (speech recognition, so ignore punctuation).
+You get a practice conversation. Only lines starting with "Learner:" are the learner. Never correct "Partner:" lines.
+The learner's lines come from speech recognition, so ignore punctuation and capital letters.
 Write short, encouraging feedback in Traditional Chinese (Taiwan):
 - overall_zh: 2 sentences about how it went.
-- good_zh: 1 to 3 things done well.
-- corrections: up to 4 of the learner's most important mistakes, each with the better English, its Chinese meaning, and why.
-- phrases: 3 to 5 useful English sentences for this situation, with Chinese.
+- good_zh: 1 to 3 things the learner did well.
+- corrections: up to 4 learner lines that had real mistakes. "better" is that same line fixed, keeping the learner's meaning. Skip lines that were already fine.
+- phrases: 3 to 5 useful English sentences the learner could use in this situation, with Chinese.
 - next_zh: one thing to try next time.`;
 }
 
 export function passageSystem(level: Level): string {
   return `You write short English listening passages for a Taiwanese adult with weak English.
 Level: ${LEVEL_RULE[level]}
-- sentences: 6 to 8 short sentences in natural spoken or announcement style, each with a Traditional Chinese (Taiwan) translation.
-- questions: 3 multiple-choice questions answered by the passage. 4 options each, only one correct. "answer" is the index (0-3) of the correct option. Explain the answer in Chinese.
-- vocab: 3 to 5 useful words or phrases from the passage with Chinese.
-- title: a short Chinese title; titleEn: an English title.`;
+- sentences: 6 to 8 short sentences. "english" is the sentence in English. "chinese" is its Traditional Chinese (Taiwan) translation.
+- questions: 3 multiple-choice questions in English about the passage, 4 English options each, only one correct. "answer" is the index (0-3) of the correct option. "question_zh" translates the question; "explain_zh" explains the answer in Chinese.
+- vocab: 3 to 5 English words or phrases from the passage with Chinese meanings.
+- title_zh: a short Chinese title. title_en: an English title.
+The "english" fields must contain only English.`;
 }
 
 /** Extract the first JSON object from model text (tolerates fences or stray text). */
@@ -99,9 +101,9 @@ const str = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v.tr
 function asPair(v: unknown): Pair | null {
   if (!v || typeof v !== 'object') return null;
   const o = v as Record<string, unknown>;
-  const en = str(o.en);
+  const en = str(o.en) || str(o.english);
   if (!en) return null;
-  return { en, zh: str(o.zh) };
+  return { en, zh: str(o.zh) || str(o.chinese) };
 }
 
 function asCorrection(v: unknown): Correction | null {
@@ -138,8 +140,12 @@ export function parseTurn(text: string): TurnReply {
   try {
     o = extractJson(text) as Record<string, unknown>;
   } catch {
-    // Fall back to plain text so the conversation can continue.
-    return { reply: text.trim(), reply_zh: '', correction: null, hint: { en: '', zh: '' }, done: false };
+    // A short plain sentence can still be used; anything longer is the model rambling, not a reply.
+    const plain = text.trim();
+    if (plain && plain.length <= 160 && !plain.includes('{')) {
+      return { reply: plain, reply_zh: '', correction: null, hint: { en: '', zh: '' }, done: false };
+    }
+    throw new Error('AI 這次的回覆格式不對，請按「重試」。');
   }
   const reply = str(o.reply);
   if (!reply) throw new Error('AI 沒有回覆內容');
@@ -181,17 +187,18 @@ export function parsePassage(text: string, category: Category): Passage {
       const r = q as Record<string, unknown>;
       const options = arr(r.options).map((x) => str(x)).filter(Boolean);
       const answer = typeof r.answer === 'number' ? Math.round(r.answer) : -1;
+      if (!r.q && r.question) r.q = r.question;
       if (!str(r.q) || hasChinese(str(r.q)) || options.length < 2 || answer < 0 || answer >= options.length) return null;
       if (options.some(hasChinese)) return null;
-      return { q: str(r.q), qZh: str(r.qZh), options, answer, explainZh: str(r.explainZh) };
+      return { q: str(r.q), qZh: str(r.qZh) || str(r.question_zh), options, answer, explainZh: str(r.explainZh) || str(r.explain_zh) };
     })
     .filter((x): x is Question => !!x);
   const now = Date.now();
   return {
     id: `gen-${now}`,
     category,
-    title: str(o.title, 'AI 產生的短文'),
-    titleEn: str(o.titleEn),
+    title: str(o.title_zh) || str(o.title, 'AI 產生的短文'),
+    titleEn: str(o.title_en) || str(o.titleEn),
     sentences,
     questions,
     vocab: arr(o.vocab)

@@ -9,7 +9,7 @@ import { toTaiwan } from './zh';
 
 export { partialReply } from './prompts';
 
-export type ModelId = 'qwen3.5-2b' | 'qwen3.5-0.8b';
+export type ModelId = 'qwen3.5-2b' | 'qwen3.5-4b';
 
 export type ModelSpec = {
   id: ModelId;
@@ -24,18 +24,18 @@ export const MODELS: ModelSpec[] = [
   {
     id: 'qwen3.5-2b',
     label: '標準（Qwen3.5 2B）',
-    note: '約 1.3 GB，回覆品質較好，建議 6 GB 記憶體以上的手機',
+    note: '約 1.2 GB，大部分手機都能跑，回覆比較快',
     file: 'Qwen3.5-2B-Q4_K_M.gguf',
     url: 'https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/resolve/main/Qwen3.5-2B-Q4_K_M.gguf',
-    approxMB: 1300,
+    approxMB: 1221,
   },
   {
-    id: 'qwen3.5-0.8b',
-    label: '輕量（Qwen3.5 0.8B）',
-    note: '約 0.5 GB，比較快，但回覆和修正的品質較差',
-    file: 'Qwen3.5-0.8B-Q4_K_M.gguf',
-    url: 'https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF/resolve/main/Qwen3.5-0.8B-Q4_K_M.gguf',
-    approxMB: 530,
+    id: 'qwen3.5-4b',
+    label: '高品質（Qwen3.5 4B）',
+    note: '約 2.6 GB，修正和檢討比較準，需要 8 GB 記憶體以上的較新手機，回覆比較慢',
+    file: 'Qwen3.5-4B-Q4_K_M.gguf',
+    url: 'https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf',
+    approxMB: 2600,
   },
 ];
 
@@ -221,7 +221,11 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
       {
         messages: [{ role: 'system', content: opts.system }, ...opts.messages],
         response_format: opts.schema ? { type: 'json_schema', json_schema: { strict: true, schema: opts.schema } } : undefined,
+        // Qwen3.5 thinks out loud by default; turn it off both ways the template understands,
+        // and split off any reasoning that still slips through so it never reaches the screen.
         enable_thinking: false,
+        chat_template_kwargs: { enable_thinking: false },
+        reasoning_format: 'auto',
         n_predict: opts.maxTokens ?? 400,
         temperature: opts.temperature ?? 0.6,
         top_p: 0.9,
@@ -234,7 +238,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
         opts.onText(acc);
       },
     );
-    const text = toTaiwan(res.text ?? acc);
+    const text = toTaiwan(res.content || res.text || acc);
     const tps = res.timings?.predicted_per_second ?? 0;
     if (!text.trim()) throw new LlmError('模型沒有產生內容，請再試一次。');
     return { text, tokensPerSecond: Math.round(tps * 10) / 10, ms: Date.now() - t0 };

@@ -11,7 +11,7 @@ appId: com.yaufan.englishpractice
     id: "tab-settings"
 - assertVisible: "離線 AI 模型"
 - tapOn:
-    id: "model-qwen3.5-0.8b"
+    id: "model-qwen3.5-4b"
 - takeScreenshot: 05a_model_section
 - tapOn:
     id: "model-qwen3.5-2b"

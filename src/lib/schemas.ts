@@ -52,12 +52,20 @@ export const SUMMARY_SCHEMA = {
   additionalProperties: false,
 };
 
+// Field names spell out the language ("english"/"chinese"): small models mix them up less.
+const enZh = (enMax: number, zhMax: number) => ({
+  type: 'object',
+  properties: { english: str(enMax), chinese: str(zhMax) },
+  required: ['english', 'chinese'],
+  additionalProperties: false,
+});
+
 export const PASSAGE_SCHEMA = {
   type: 'object',
   properties: {
-    title: str(20),
-    titleEn: str(60),
-    sentences: { type: 'array', items: pair(140, 70), minItems: 6, maxItems: 8 },
+    title_zh: str(20),
+    title_en: str(60),
+    sentences: { type: 'array', items: enZh(140, 70), minItems: 6, maxItems: 8 },
     questions: {
       type: 'array',
       minItems: 3,
@@ -65,18 +73,18 @@ export const PASSAGE_SCHEMA = {
       items: {
         type: 'object',
         properties: {
-          q: str(120),
-          qZh: str(60),
+          question: str(120),
+          question_zh: str(60),
           options: { type: 'array', items: str(60), minItems: 4, maxItems: 4 },
           answer: { type: 'integer', enum: [0, 1, 2, 3] },
-          explainZh: str(80),
+          explain_zh: str(80),
         },
-        required: ['q', 'qZh', 'options', 'answer', 'explainZh'],
+        required: ['question', 'question_zh', 'options', 'answer', 'explain_zh'],
         additionalProperties: false,
       },
     },
-    vocab: { type: 'array', items: pair(40, 20), minItems: 3, maxItems: 5 },
+    vocab: { type: 'array', items: enZh(40, 20), minItems: 3, maxItems: 5 },
   },
-  required: ['title', 'titleEn', 'sentences', 'questions', 'vocab'],
+  required: ['title_zh', 'title_en', 'sentences', 'questions', 'vocab'],
   additionalProperties: false,
 };

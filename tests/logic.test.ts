@@ -171,8 +171,8 @@ test('offline model: the worked example in the prompt parses', () => {
   const sys = conversationSystem(SCENARIOS[0], 'A2');
   const ex = sys.slice(sys.lastIndexOf('{"reply"'));
   const r = parseTurn(ex);
-  assert.equal(r.reply, 'Sure! What size would you like?');
-  assert.equal(r.correction?.better, "I'd like a hot coffee, please.");
+  assert.equal(r.reply, 'Nice! Do you like living there?');
+  assert.equal(r.correction?.better, "I'm from Taipei.");
 });
 
 test('guards: unusable model output is dropped', () => {
@@ -187,4 +187,9 @@ test('guards: unusable model output is dropped', () => {
       ),
     /不能用/,
   );
+});
+
+test('guards: long non-JSON output is an error, not a chat bubble', () => {
+  assert.throws(() => parseTurn('The learner\'s input "i want latte big" is close to the goal but slightly ungrammatical. '.repeat(4)), /格式不對/);
+  assert.equal(parseTurn('Sorry, can you say that again?').reply, 'Sorry, can you say that again?');
 });

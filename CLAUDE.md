@@ -12,7 +12,7 @@ Fan 自己用的英文練習 App：口說對話、單字片語、聽力。Expo S
 - `src/app/`：路由（Expo Router）。`(tabs)/` 是五個分頁：今天、對話、單字、聽力、設定。
 - `src/data/`：內建內容。`scenarios.ts` 對話情境、`decks.ts` 單字組、`listening.ts` 聽力短文。
 - `src/lib/llm.ts`：手機上的離線模型（llama.rn / llama.cpp）。模型檔第一次在設定頁從 Hugging Face 下載到 App 的文件資料夾，之後完全離線；不使用任何雲端 API 或金鑰。
-- 模型：Qwen3.5 2B（標準，約 1.3 GB）和 0.8B（輕量，約 0.5 GB），都是 Q4_K_M GGUF。
+- 模型：Qwen3.5 2B（標準，約 1.2 GB，預設）和 4B（高品質，約 2.6 GB，較新的手機），都是 Q4_K_M GGUF。0.8B 測過品質太差（會教錯英文），不要再加回來。
 - `src/lib/schemas.ts`：給模型的 JSON schema，llama.cpp 會轉成文法強制輸出合法 JSON；`reply` 必須排第一個欄位，App 才能邊產生邊顯示、先唸出來。
 - `src/lib/zh.ts`：小模型常冒出簡體字，模型輸出的中文一律用 OpenCC 轉成台灣繁體。
 - `src/lib/prompts.ts`：給模型的指令（為小模型寫得短、附一個範例）和解析（解析失敗要能優雅退回）。
