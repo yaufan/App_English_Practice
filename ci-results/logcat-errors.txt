@@ -1,9 +1,10 @@
-7:11-15 17:08:49.005   518  1859 W ActivityTaskManager: Force removing ActivityRecord{4725ad9 u0 com.yaufan.englishpractice/.MainActivity t12 f}}: app died, no saved state
-380:11-15 17:08:50.594  8554  8576 I ReactNativeJS: Running "main"
-19761:11-15 17:15:09.109  8554  8576 W ReactNativeJS: '[turn] unusable model output:', '<|im_start|>assistant\n<think>\nThe user\'s input is "i want latte big".\n- Last message: "i want latte big" (no grammar mistake, no Chinese characters).\n- Corrected version: "I want a big latte."\n- Chinese translation of corrected: 我想要一杯大拿鐵。\n- Reason for correction: Missing \'a\'; said "big latte" is fine.\n\nNow I need to respond as a barista.\nI should ask about size (large or small) and delivery (here or go).\nI can also offer some common options like hot/iced, but since the user just said "big", I should clarify size and then ask if they want hot or iced.\nOr I can assume "big" means large cup and j'
-27009:11-15 17:17:19.650  8400  8400 I AndroidRuntime: VM exiting with result code 0.
-27412:11-15 17:17:21.316  8871  8871 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-27413:11-15 17:17:21.322  8871  8871 I AndroidRuntime: Using default boot image
-27414:11-15 17:17:21.322  8871  8871 I AndroidRuntime: Leaving lock profiling enabled
-27428:11-15 17:17:21.623  8871  8871 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-27500:11-15 17:17:22.677  8871  8871 D AndroidRuntime: Shutting down VM
+9:11-15 17:41:28.052   518  2593 W ActivityTaskManager: Force removing ActivityRecord{cda0bf3 u0 com.yaufan.englishpractice/.MainActivity t12 f}}: app died, no saved state
+387:11-15 17:41:29.526  8291  8313 I ReactNativeJS: Running "main"
+21819:11-15 17:51:37.306  8291  8313 W ReactNativeJS: '[passage] unusable model output:', 'AI 回傳的格式不正確', '<think>\nHere is a listening passage designed for a Taiwanese adult with weak English at an A2 level. The content focuses on the introduction of a voice recognition system in a hospital, using simple words and short sentences (6-8 sentences).\n\n**Title_zh:** 醫院的新系統\n**title_en:** The New Hospital System\n\n<|end|>\n<|end|>\n<|start|>\n**english**: Hello, I am your assistant.\n**chinese**: 大家好，我是你們的助手。\n**english**: This system helps doctors read patient notes quickly.\n**chinese**: 這個系統幫助醫生快速閱讀患者的筆記。\n**english**: We need to listen to the voice first.\n**chinese**: 我們需要先聽聲音。\n**english**: The machine will t'
+25265:11-15 17:56:04.735  8291  8313 W ReactNativeJS: '[passage] unusable model output:', 'AI 回傳的格式不正確', '<think>\nHere is a listening passage designed for an adult learner with weak English, focusing on a workplace situation in a hospital involving medical AI. The content is simple, with short sentences and daily vocabulary.\n\n**Title_en:** Introducing the Hospital AI System\n**Title_zh:** 醫院介紹語音辨識系統\n\n**English:**\nGood morning, everyone. Today I will introduce our new project.\nIt is called the Medical Voice Assistant.\nThis system uses special microphones to listen to patients\' speech.\nThe computer reads every sound into text automatically.\nDoctors can check the results on their screens immediately.\n'
+28262:11-15 17:56:52.300  8142  8142 I AndroidRuntime: VM exiting with result code 0.
+28610:11-15 17:56:53.098  8711  8711 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+28611:11-15 17:56:53.100  8711  8711 I AndroidRuntime: Using default boot image
+28612:11-15 17:56:53.100  8711  8711 I AndroidRuntime: Leaving lock profiling enabled
+28641:11-15 17:56:53.299  8711  8711 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+28694:11-15 17:56:54.346  8711  8711 D AndroidRuntime: Shutting down VM
