@@ -11,14 +11,18 @@ Fan 自己用的英文練習 App：口說對話、單字片語、聽力。Expo S
 ## 結構
 - `src/app/`：路由（Expo Router）。`(tabs)/` 是五個分頁：今天、對話、單字、聽力、設定。
 - `src/data/`：內建內容。`scenarios.ts` 對話情境、`decks.ts` 單字組、`listening.ts` 聽力短文。
-- `src/lib/claude.ts`：直接呼叫 Anthropic Messages API，金鑰由使用者在設定頁輸入，存在 SecureStore。
-- `src/lib/prompts.ts`：所有給 AI 的指令和 JSON 格式，以及解析（解析失敗要能優雅退回）。
+- `src/lib/llm.ts`：手機上的離線模型（llama.rn / llama.cpp）。模型檔第一次在設定頁從 Hugging Face 下載到 App 的文件資料夾，之後完全離線；不使用任何雲端 API 或金鑰。
+- 模型：Qwen3.5 2B（標準，約 1.3 GB）和 0.8B（輕量，約 0.5 GB），都是 Q4_K_M GGUF。
+- `src/lib/schemas.ts`：給模型的 JSON schema，llama.cpp 會轉成文法強制輸出合法 JSON；`reply` 必須排第一個欄位，App 才能邊產生邊顯示、先唸出來。
+- `src/lib/zh.ts`：小模型常冒出簡體字，模型輸出的中文一律用 OpenCC 轉成台灣繁體。
+- `src/lib/prompts.ts`：給模型的指令（為小模型寫得短、附一個範例）和解析（解析失敗要能優雅退回）。
 - `src/lib/srs.ts`：間隔複習排程；`src/lib/match.ts`：比對說出／打出的英文。
 - `src/lib/useRecognizer.ts`：語音辨識（expo-speech-recognition），`src/lib/tts.ts`：朗讀（expo-speech）。
 
 ## 指令
 - 型別檢查：`npx tsc --noEmit`
-- 邏輯與內容測試：`npm test`（Node 內建 test runner，測 srs、比對、解析、內建內容格式）
+- 邏輯與內容測試：`npm test`（Node 內建 test runner，測 srs、比對、解析、schema、繁簡轉換、內建內容格式）
+- 模擬器和模型品質檢查：push 到 `ci/emulator-test` 或 `feat/offline-model` 分支會跑 `.github/workflows/emulator-check.yml`：在 CI 用 llama.cpp 跑同一個模型和 prompt 檢查回覆品質，並在 Android 模擬器下載輕量模型實際對話；結果 commit 回該分支的 `ci-results/`。
 - 加套件：`npx expo install <pkg>`；在沒有 api.expo.dev 連線的環境用 `EXPO_OFFLINE=1 npx expo install <pkg>`
 - 打 JS bundle 檢查：`EXPO_OFFLINE=1 npx expo export --platform android`
 - `android/`、`ios/` 由 prebuild 產生，不要手動改、不要 commit，原生設定放 `app.json` 的 plugins。

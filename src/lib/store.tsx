@@ -1,15 +1,13 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
-import type { ModelId } from './claude';
+import { DEFAULT_MODEL, MODELS, LlmError, deleteModel, downloadModel, isDownloaded, unloadModel, type ModelId } from './llm';
 import type { Level } from './prompts';
 import { type CardState, type Rating, dayNumber, schedule } from './srs';
 import type { VocabItem } from '../data/decks';
 import type { Passage } from '../data/listening';
 
 export type Settings = {
-  model: ModelId;
+  modelId: ModelId;
   level: Level;
   rate: number;
   voice: string;
@@ -19,7 +17,7 @@ export type Settings = {
 };
 
 export const DEFAULT_SETTINGS: Settings = {
-  model: 'claude-haiku-5-5',
+  modelId: DEFAULT_MODEL,
   level: 'A2',
   rate: 0.85,
   voice: '',
@@ -52,34 +50,19 @@ const EMPTY_PROGRESS: Progress = {
 
 const K_SETTINGS = 'settings.v1';
 const K_PROGRESS = 'progress.v1';
-const K_API = 'anthropic_api_key';
-
-async function readKey(): Promise<string> {
-  try {
-    if (Platform.OS === 'web') return (await AsyncStorage.getItem(K_API)) ?? '';
-    return (await SecureStore.getItemAsync(K_API)) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-async function writeKey(v: string): Promise<void> {
-  if (Platform.OS === 'web') {
-    if (v) await AsyncStorage.setItem(K_API, v);
-    else await AsyncStorage.removeItem(K_API);
-    return;
-  }
-  if (v) await SecureStore.setItemAsync(K_API, v);
-  else await SecureStore.deleteItemAsync(K_API);
-}
-
 type Store = {
   ready: boolean;
   today: number;
   settings: Settings;
   updateSettings: (patch: Partial<Settings>) => void;
-  apiKey: string;
-  setApiKey: (v: string) => Promise<void>;
+  /** Which models are fully downloaded on this phone. */
+  downloaded: Record<ModelId, boolean>;
+  modelReady: boolean;
+  download: { id: ModelId; fraction: number; mbDone: number; mbTotal: number } | null;
+  downloadError: string | null;
+  startDownload: (id: ModelId) => void;
+  cancelDownload: () => void;
+  removeModel: (id: ModelId) => Promise<void>;
   progress: Progress;
   newLeftToday: number;
   rateCard: (id: string, rating: Rating) => void;
@@ -116,24 +99,29 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [progress, setProgress] = useState<Progress>(EMPTY_PROGRESS);
-  const [apiKey, setKeyState] = useState('');
+  const [downloaded, setDownloaded] = useState<Record<ModelId, boolean>>(
+    () => Object.fromEntries(MODELS.map((m) => [m.id, false])) as Record<ModelId, boolean>,
+  );
+  const [download, setDownload] = useState<Store['download']>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const [today, setToday] = useState(dayNumber());
   const loaded = useRef(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const [s, p, k] = await Promise.all([
-          AsyncStorage.getItem(K_SETTINGS),
-          AsyncStorage.getItem(K_PROGRESS),
-          readKey(),
-        ]);
-        if (s) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(s) });
+        const [s, p] = await Promise.all([AsyncStorage.getItem(K_SETTINGS), AsyncStorage.getItem(K_PROGRESS)]);
+        if (s) {
+          const saved = JSON.parse(s);
+          const modelId = MODELS.some((m) => m.id === saved.modelId) ? saved.modelId : DEFAULT_MODEL;
+          setSettings({ ...DEFAULT_SETTINGS, ...saved, modelId });
+        }
         if (p) setProgress({ ...EMPTY_PROGRESS, ...JSON.parse(p) });
-        setKeyState(k);
       } catch {
         // corrupted storage: start fresh rather than crash
       }
+      refreshDownloaded();
       loaded.current = true;
       setReady(true);
     })();
@@ -155,11 +143,48 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const updateSettings = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), []);
 
-  const setApiKey = useCallback(async (v: string) => {
-    const clean = v.trim();
-    await writeKey(clean);
-    setKeyState(clean);
+  function refreshDownloaded() {
+    setDownloaded(Object.fromEntries(MODELS.map((m) => [m.id, isDownloaded(m.id)])) as Record<ModelId, boolean>);
+  }
+
+  const startDownload = useCallback((id: ModelId) => {
+    if (abortRef.current) return;
+    const ac = new AbortController();
+    abortRef.current = ac;
+    setDownloadError(null);
+    setDownload({ id, fraction: 0, mbDone: 0, mbTotal: 0 });
+    let last = 0;
+    downloadModel(
+      id,
+      (fraction, mbDone, mbTotal) => {
+        // keep re-renders to a few per second
+        const now = Date.now();
+        if (now - last < 400 && fraction < 1) return;
+        last = now;
+        setDownload({ id, fraction, mbDone, mbTotal });
+      },
+      ac.signal,
+    )
+      .then(() => setSettings((st) => ({ ...st, modelId: id })))
+      .catch((e) => setDownloadError(e instanceof LlmError ? e.message : `下載失敗：${(e as Error).message}`))
+      .finally(() => {
+        abortRef.current = null;
+        setDownload(null);
+        refreshDownloaded();
+      });
   }, []);
+
+  const cancelDownload = useCallback(() => abortRef.current?.abort(), []);
+
+  const removeModel = useCallback(async (id: ModelId) => {
+    await deleteModel(id);
+    refreshDownloaded();
+  }, []);
+
+  // switching models frees the memory held by the previous one
+  useEffect(() => {
+    unloadModel();
+  }, [settings.modelId]);
 
   const markActiveIn = (p: Progress, day: number): Progress =>
     p.activeDays.includes(day) ? p : { ...p, activeDays: [...p.activeDays.slice(-400), day] };
@@ -234,8 +259,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       today,
       settings,
       updateSettings,
-      apiKey,
-      setApiKey,
+      downloaded,
+      modelReady: downloaded[settings.modelId],
+      download,
+      downloadError,
+      startDownload,
+      cancelDownload,
+      removeModel,
       progress,
       newLeftToday,
       rateCard,
@@ -250,7 +280,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       streak,
       resetProgress,
     }),
-    [ready, today, settings, updateSettings, apiKey, setApiKey, progress, newLeftToday, rateCard, saveItem, isSaved, removeSaved, markActive, addPassage, removePassage, recordListen, recordTalk, streak, resetProgress],
+    [ready, today, settings, updateSettings, downloaded, download, downloadError, startDownload, cancelDownload, removeModel, progress, newLeftToday, rateCard, saveItem, isSaved, removeSaved, markActive, addPassage, removePassage, recordListen, recordTalk, streak, resetProgress],
   );
 
   // Wait for saved progress before showing screens, so nothing is built from empty state.

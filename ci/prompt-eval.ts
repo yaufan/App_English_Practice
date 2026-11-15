@@ -1,6 +1,8 @@
-// Plays scripted weak-learner conversations through the app's real prompts and checks the AI replies.
-// Run: API_KEY=... node --experimental-strip-types ci/prompt-eval.ts > ci-results/prompt-eval.md
-import { callClaude, type ChatMessage, type ModelId } from '../src/lib/claude.ts';
+// Plays scripted weak-learner conversations through the app's real prompts and JSON schemas
+// against the same on-device model, served by llama.cpp (llama-server) on the CI machine.
+// Run: LLM_URL=http://127.0.0.1:8080 MODEL_NAME=qwen3.5-2b node --experimental-strip-types ci/prompt-eval.ts
+import { TURN_SCHEMA, SUMMARY_SCHEMA, PASSAGE_SCHEMA } from '../src/lib/schemas.ts';
+import { toTaiwan } from '../src/lib/zh.ts';
 import {
   START_MESSAGE,
   conversationSystem,
@@ -14,8 +16,38 @@ import {
 } from '../src/lib/prompts.ts';
 import { getScenario, freeTalkScenario, type Scenario } from '../src/data/scenarios.ts';
 
-const KEY = process.env.API_KEY ?? '';
-const MODEL = (process.env.MODEL as ModelId) || 'claude-haiku-5-5';
+type ChatMessage = { role: 'user' | 'assistant'; content: string };
+const URL_BASE = process.env.LLM_URL ?? 'http://127.0.0.1:8080';
+const MODEL = process.env.MODEL_NAME ?? 'local';
+let totalTokens = 0;
+let totalMs = 0;
+let rawSimplified = 0;
+
+/** Same settings the app uses (see src/lib/llm.ts): schema-constrained, thinking off, then OpenCC to Taiwan Chinese. */
+async function callModel(o: { system: string; messages: ChatMessage[]; schema: object; maxTokens: number; temperature: number }) {
+  const t0 = Date.now();
+  const res = await fetch(`${URL_BASE}/v1/chat/completions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      messages: [{ role: 'system', content: o.system }, ...o.messages],
+      response_format: { type: 'json_schema', json_schema: { strict: true, schema: o.schema } },
+      chat_template_kwargs: { enable_thinking: false },
+      max_tokens: o.maxTokens,
+      temperature: o.temperature,
+      top_p: 0.9,
+      top_k: 40,
+      repeat_penalty: 1.05,
+    }),
+  });
+  if (!res.ok) throw new Error(`llama-server ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = (await res.json()) as { choices: { message: { content: string } }[]; usage?: { completion_tokens?: number } };
+  const raw = data.choices[0].message.content ?? '';
+  if (SIMPLIFIED.test(raw)) rawSimplified += 1;
+  totalTokens += data.usage?.completion_tokens ?? 0;
+  totalMs += Date.now() - t0;
+  return { text: toTaiwan(raw), ms: Date.now() - t0 };
+}
 const LEVEL: Level = 'A2';
 
 // Characters that only appear in Simplified Chinese (a quick Traditional-Chinese check).
@@ -65,24 +97,21 @@ async function conversation(sc: Scenario, lines: string[]) {
     log(`- **AI**：${sc.opener.en}`);
   } else {
     history.push({ role: 'user', content: START_MESSAGE });
-    const t0 = Date.now();
-    const raw = await callClaude({ apiKey: KEY, model: MODEL, system, messages: history, maxTokens: 500 });
+    const { text: raw, ms } = await callModel({ system, messages: history, schema: TURN_SCHEMA, maxTokens: 350, temperature: 0.7 });
     const r = parseTurn(raw);
-    history.push({ role: 'assistant', content: raw });
+    history.push({ role: 'assistant', content: JSON.stringify(r) });
     turns.push({ role: 'ai', text: r.reply });
-    log(`- **AI**：${r.reply}　（${r.reply_zh}）〔${Date.now() - t0} ms〕`);
+    log(`- **AI**：${r.reply}　（${r.reply_zh}）〔${ms} ms〕`);
   }
   for (const line of lines) {
     history.push({ role: 'user', content: line });
     turns.push({ role: 'me', text: line });
     log(`- **我**：${line}`);
-    const t0 = Date.now();
-    const raw = await callClaude({ apiKey: KEY, model: MODEL, system, messages: history, maxTokens: 500 });
-    const ms = Date.now() - t0;
+    const { text: raw, ms } = await callModel({ system, messages: history, schema: TURN_SCHEMA, maxTokens: 350, temperature: 0.7 });
     const r = parseTurn(raw);
     const isJson = raw.trim().startsWith('{') || raw.includes('"reply"');
     if (!isJson) issues.push(`${where}: 回覆不是 JSON，App 會退回純文字顯示：${raw.slice(0, 80)}`);
-    history.push({ role: 'assistant', content: raw });
+    history.push({ role: 'assistant', content: JSON.stringify(r) });
     turns.push({ role: 'ai', text: r.reply });
     const st = sentenceStats(r.reply);
     if (st.max > 16) issues.push(`${where}: 句子太長（${st.max} 字）：${r.reply}`);
@@ -102,21 +131,19 @@ async function conversation(sc: Scenario, lines: string[]) {
     if (r.hint.en) log(`  - 提示：${r.hint.en}（${r.hint.zh}）`);
     if (r.done) break;
   }
-  const t0 = Date.now();
-  const raw = await callClaude({
-    apiKey: KEY,
-    model: MODEL,
+  const { text: raw, ms: sumMs } = await callModel({
     system: summarySystem(LEVEL),
     messages: [{ role: 'user', content: `Scenario: ${sc.titleEn}. Goal: ${sc.goal}\n\nTranscript:\n${transcriptText(turns)}` }],
-    maxTokens: 1200,
-    timeoutMs: 60_000,
+    schema: SUMMARY_SCHEMA,
+    maxTokens: 900,
+    temperature: 0.5,
   });
   const s = parseSummary(raw);
   if (!s.overall_zh) issues.push(`${where}: 檢討沒有整體評語`);
   if (s.phrases.length < 3) issues.push(`${where}: 檢討的好用句子少於 3 句`);
   checkZh('overall_zh', s.overall_zh, where);
   s.corrections.forEach((c) => checkZh('檢討 why_zh', c.why_zh, where));
-  log(`- **檢討**〔${Date.now() - t0} ms〕：${s.overall_zh}`);
+  log(`- **檢討**〔${sumMs} ms〕：${s.overall_zh}`);
   s.good_zh.forEach((g) => log(`  - 好：${g}`));
   s.corrections.forEach((c) => log(`  - 改：${c.you_said} → **${c.better}**（${c.better_zh}）— ${c.why_zh}`));
   s.phrases.forEach((p) => log(`  - 句：${p.en}（${p.zh}）`));
@@ -126,10 +153,7 @@ async function conversation(sc: Scenario, lines: string[]) {
 
 async function passage() {
   log('## AI 產生聽力短文（AI 工作／介紹語音辨識系統）');
-  const t0 = Date.now();
-  const raw = await callClaude({
-    apiKey: KEY,
-    model: MODEL,
+  const { text: raw, ms: pMs } = await callModel({
     system: passageSystem(LEVEL),
     messages: [
       {
@@ -138,11 +162,12 @@ async function passage() {
           'Type: a workplace situation in a hospital medical AI team (meetings, projects, vendors, doctors), using simple words.\nTopic (may be written in Chinese): 介紹語音辨識系統',
       },
     ],
-    maxTokens: 1800,
-    timeoutMs: 60_000,
+    schema: PASSAGE_SCHEMA,
+    maxTokens: 1400,
+    temperature: 0.7,
   });
   const p = parsePassage(raw, 'work');
-  log(`〔${Date.now() - t0} ms〕**${p.title}**（${p.titleEn}）`);
+  log(`〔${pMs} ms〕**${p.title}**（${p.titleEn}）`);
   if (p.sentences.length < 6 || p.sentences.length > 8) issues.push(`短文：句數 ${p.sentences.length}（應 6–8）`);
   if (p.questions.length !== 3) issues.push(`短文：題目 ${p.questions.length} 題（應 3 題）`);
   p.sentences.forEach((x) => {
@@ -159,13 +184,8 @@ async function passage() {
 }
 
 async function main() {
-  log('# 真實 AI 回覆檢查');
-  if (!KEY) {
-    log('沒有找到 API 金鑰 Secret（ANTHROPIC_API_KEY / CLAUDE_API_KEY），這部分跳過。');
-    console.log(out.join('\n'));
-    return;
-  }
-  log(`模型：${MODEL}，難度：${LEVEL}`);
+  log(`# 離線模型回覆檢查：${MODEL}`);
+  log(`難度：${LEVEL}。用 llama.cpp 跑和 App 一樣的模型檔、prompt 和 JSON 格式（CI 電腦的速度不代表手機速度）。`);
   log();
   for (const s of SCRIPTS) {
     try {
@@ -180,6 +200,9 @@ async function main() {
   } catch (e) {
     issues.push(`短文：失敗 ${(e as Error).message}`);
   }
+  log('## 統計');
+  log(`- 產生 ${totalTokens} 個 token，共 ${(totalMs / 1000).toFixed(0)} 秒`);
+  log(`- 模型原始輸出含簡體字的次數：${rawSimplified}（App 會自動轉成繁體）`);
   log('## 發現的問題');
   if (issues.length === 0) log('沒有');
   issues.forEach((i) => log(`- ${i}`));

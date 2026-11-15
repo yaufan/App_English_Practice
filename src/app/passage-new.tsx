@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StackPage } from '../components/Page';
-import { Btn, Card, Chip, NeedKeyNotice, Notice, SectionTitle } from '../components/ui';
+import { Btn, Card, Chip, NeedModelNotice, Notice, SectionTitle } from '../components/ui';
 import { useStore } from '../lib/store';
-import { callClaude } from '../lib/claude';
+import { generate, stopGenerating } from '../lib/llm';
+import { PASSAGE_SCHEMA } from '../lib/schemas';
 import { LEVEL_LABEL, parsePassage, passageSystem } from '../lib/prompts';
 import { CATEGORY_LABEL, type Category } from '../data/scenarios';
 import { C } from '../theme';
@@ -23,26 +24,39 @@ const STYLE: Record<Category, string> = {
 
 export default function NewPassage() {
   const router = useRouter();
-  const { apiKey, settings, addPassage } = useStore();
+  const { modelReady, settings, addPassage } = useStore();
   const [cat, setCat] = useState<Category>('daily');
   const [topic, setTopic] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [chars, setChars] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
 
-  async function generate() {
+  useEffect(() => () => void stopGenerating(), []);
+
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const t = setInterval(() => setElapsed((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [busy]);
+
+  async function run() {
     setBusy(true);
     setErr(null);
     try {
       const t = topic.trim() || IDEAS[cat][Math.floor(Math.random() * IDEAS[cat].length)];
-      const text = await callClaude({
-        apiKey,
-        model: settings.model,
+      setChars(0);
+      const out = await generate({
+        modelId: settings.modelId,
         system: passageSystem(settings.level),
         messages: [{ role: 'user', content: `Type: ${STYLE[cat]}.\nTopic (may be written in Chinese): ${t}` }],
-        maxTokens: 1800,
-        timeoutMs: 60_000,
+        schema: PASSAGE_SCHEMA,
+        maxTokens: 1400,
+        temperature: 0.7,
+        onText: (raw) => setChars(raw.length),
       });
-      const p = parsePassage(text, cat);
+      const p = parsePassage(out.text, cat);
       addPassage(p);
       router.replace({ pathname: '/passage/[id]', params: { id: p.id } });
     } catch (e) {
@@ -54,7 +68,7 @@ export default function NewPassage() {
 
   return (
     <StackPage>
-      <NeedKeyNotice />
+      <NeedModelNotice />
       <SectionTitle>類型</SectionTitle>
       <View style={s.chips}>
         {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
@@ -86,10 +100,12 @@ export default function NewPassage() {
       {busy ? (
         <View style={s.busy}>
           <ActivityIndicator color={C.primary} />
-          <Text style={s.busyText}>AI 正在寫短文和題目，大約 10 秒…</Text>
+          <Text style={s.busyText}>
+            手機上的 AI 正在寫短文和題目…（{elapsed} 秒，已寫 {chars} 字元）{'\n'}通常要 30～90 秒。
+          </Text>
         </View>
       ) : (
-        <Btn title="產生短文" icon="magic" style={{ marginTop: 16 }} disabled={!apiKey} onPress={generate} />
+        <Btn title="產生短文" icon="magic" style={{ marginTop: 16 }} disabled={!modelReady} onPress={run} />
       )}
     </StackPage>
   );
@@ -101,5 +117,5 @@ const s = StyleSheet.create({
   ideaLabel: { fontSize: 13, color: C.sub, marginTop: 14, marginBottom: 8 },
   level: { fontSize: 13, color: C.sub, marginTop: 16, marginBottom: 6 },
   busy: { flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'center', paddingVertical: 20 },
-  busyText: { color: C.sub, fontSize: 14 },
+  busyText: { color: C.sub, fontSize: 14, flexShrink: 1, textAlign: 'center', lineHeight: 21 },
 });

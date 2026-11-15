@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Alert, Linking, Platform, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import { TabPage } from '../../components/Page';
-import { Btn, Card, Chip, Icon, Notice, SectionTitle } from '../../components/ui';
+import { Btn, Card, Chip, Icon, Notice, SectionTitle, Tag } from '../../components/ui';
 import { useStore } from '../../lib/store';
-import { MODELS, testKey } from '../../lib/claude';
+import { MODELS, downloadedSizeMB, freeSpaceMB, generate, getSpec } from '../../lib/llm';
 import { LEVEL_LABEL, type Level } from '../../lib/prompts';
 import { englishVoices, speak } from '../../lib/tts';
 import { C } from '../../theme';
@@ -17,9 +17,8 @@ const RATES: { v: number; label: string }[] = [
 ];
 
 export default function SettingsScreen() {
-  const { apiKey, setApiKey, settings, updateSettings, resetProgress } = useStore();
-  const [keyInput, setKeyInput] = useState('');
-  const [keyMsg, setKeyMsg] = useState<{ tone: 'good' | 'bad' | 'info'; text: string } | null>(null);
+  const { settings, updateSettings, resetProgress, downloaded, download, downloadError, startDownload, cancelDownload, removeModel } = useStore();
+  const [testMsg, setTestMsg] = useState<{ tone: 'good' | 'bad' | 'info'; text: string } | null>(null);
   const [testing, setTesting] = useState(false);
   const [voices, setVoices] = useState<{ id: string; name: string; lang: string }[]>([]);
   const [showVoices, setShowVoices] = useState(false);
@@ -28,92 +27,110 @@ export default function SettingsScreen() {
     englishVoices().then(setVoices);
   }, []);
 
-  const masked = apiKey ? `${apiKey.slice(0, 10)}…${apiKey.slice(-4)}` : '';
+  const spec = getSpec(settings.modelId);
+  const isDl = downloaded[settings.modelId];
+  const dlThis = download?.id === settings.modelId ? download : null;
 
-  async function saveAndTest() {
-    const k = keyInput.trim();
-    if (!k) return;
+  async function testModel() {
     setTesting(true);
-    setKeyMsg(null);
+    setTestMsg({ tone: 'info', text: '第一次會花幾秒載入模型…' });
     try {
-      await testKey(k, settings.model);
-      await setApiKey(k);
-      setKeyInput('');
-      setKeyMsg({ tone: 'good', text: '金鑰可以用，已儲存在這支手機。' });
+      const r = await generate({
+        modelId: settings.modelId,
+        system: 'You are a friendly English tutor. Answer in one short sentence.',
+        messages: [{ role: 'user', content: 'Say hello to a beginner English learner from Taiwan.' }],
+        maxTokens: 40,
+      });
+      setTestMsg({
+        tone: 'good',
+        text: `可以用了！\n「${r.text.trim()}」\n用了 ${(r.ms / 1000).toFixed(1)} 秒，每秒約 ${r.tokensPerSecond} 個字詞。`,
+      });
     } catch (e) {
-      setKeyMsg({ tone: 'bad', text: (e as Error).message });
+      setTestMsg({ tone: 'bad', text: (e as Error).message });
     } finally {
       setTesting(false);
     }
   }
 
-  async function retest() {
-    setTesting(true);
-    setKeyMsg(null);
-    try {
-      await testKey(apiKey, settings.model);
-      setKeyMsg({ tone: 'good', text: `連線正常（${MODELS.find((m) => m.id === settings.model)?.label}）。` });
-    } catch (e) {
-      setKeyMsg({ tone: 'bad', text: (e as Error).message });
-    } finally {
-      setTesting(false);
-    }
+  function confirmDelete() {
+    const go = async () => {
+      await removeModel(settings.modelId);
+      setTestMsg(null);
+    };
+    if (Platform.OS === 'web') return go();
+    Alert.alert('刪除模型', `刪除「${spec.label}」可以空出約 ${downloadedSizeMB(settings.modelId)} MB，之後要用 AI 對話得重新下載。確定嗎？`, [
+      { text: '取消', style: 'cancel' },
+      { text: '刪除', style: 'destructive', onPress: go },
+    ]);
   }
 
   function confirmReset() {
     const go = () => resetProgress();
     if (Platform.OS === 'web') return go();
-    Alert.alert('清除學習紀錄', '單字進度、收藏、聽力成績和 AI 產生的短文都會刪除，金鑰和設定會保留。確定嗎？', [
+    Alert.alert('清除學習紀錄', '單字進度、收藏、聽力成績和 AI 產生的短文都會刪除，模型和設定會保留。確定嗎？', [
       { text: '取消', style: 'cancel' },
       { text: '清除', style: 'destructive', onPress: go },
     ]);
   }
 
   const voiceName = settings.voice ? voices.find((v) => v.id === settings.voice)?.name ?? settings.voice : '系統預設';
+  const free = freeSpaceMB();
 
   return (
     <TabPage title="設定">
-      <SectionTitle>Claude API 金鑰</SectionTitle>
-      <Card>
-        {apiKey ? (
-          <View style={s.keyRow}>
-            <Icon name="key" size={16} color={C.good} />
-            <Text style={s.keyText}>{masked}</Text>
-            <Btn small variant="ghost" title="測試" loading={testing} onPress={retest} />
-            <Btn small variant="danger" title="移除" onPress={() => setApiKey('')} />
+      <SectionTitle>離線 AI 模型</SectionTitle>
+      <Card style={{ gap: 10 }}>
+        <Text style={s.help}>AI 對話、檢討和產生聽力短文都在手機上執行，不用網路、不用金鑰，你說的話也不會傳出去。</Text>
+        {MODELS.map((m) => {
+          const on = settings.modelId === m.id;
+          const dl = download?.id === m.id;
+          return (
+            <Pressable key={m.id} testID={`model-${m.id}`} onPress={() => updateSettings({ modelId: m.id })} style={s.radioRow}>
+              <Icon name={on ? 'dot-circle-o' : 'circle-o'} size={20} color={on ? C.primary : C.faint} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.radioTitle}>{m.label}</Text>
+                <Text style={s.radioSub}>{m.note}</Text>
+              </View>
+              {downloaded[m.id] ? (
+                <Tag label="已下載" fg={C.good} bg={C.goodSoft} />
+              ) : dl ? (
+                <Tag label={`${Math.round((download?.fraction ?? 0) * 100)}%`} fg={C.primary} bg={C.primarySoft} />
+              ) : null}
+            </Pressable>
+          );
+        })}
+
+        {dlThis ? (
+          <View style={{ marginTop: 4 }}>
+            <View style={s.barBg}>
+              <View style={[s.barFg, { width: `${Math.round(dlThis.fraction * 100)}%` }]} />
+            </View>
+            <Text style={s.help}>
+              下載中 {dlThis.mbDone} / {dlThis.mbTotal || spec.approxMB} MB。可以先去練單字和聽力，別關掉 App。
+            </Text>
+            <Btn small variant="ghost" title="取消下載" style={{ marginTop: 8 }} onPress={cancelDownload} />
+          </View>
+        ) : isDl ? (
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+            <Btn style={{ flex: 1 }} testID="model-test" title="測試模型" icon="play" loading={testing} onPress={testModel} />
+            <Btn variant="danger" title="刪除" icon="trash-o" onPress={confirmDelete} />
           </View>
         ) : (
-          <Text style={s.help}>對話檢討、AI 對話和產生聽力短文需要金鑰。金鑰只存在這支手機裡。</Text>
+          <View style={{ marginTop: 4 }}>
+            <Btn
+              testID="model-download"
+              title={`下載（約 ${spec.approxMB >= 1000 ? `${(spec.approxMB / 1024).toFixed(1)} GB` : `${spec.approxMB} MB`}）`}
+              icon="download"
+              disabled={!!download}
+              onPress={() => startDownload(settings.modelId)}
+            />
+            <Text style={[s.help, { marginTop: 8 }]}>
+              建議用 Wi-Fi。{free > 0 ? `手機目前剩 ${(free / 1024).toFixed(1)} GB。` : ''}
+            </Text>
+          </View>
         )}
-        <TextInput
-          testID="key-input"
-          value={keyInput}
-          onChangeText={setKeyInput}
-          placeholder={apiKey ? '貼上新的金鑰以更換' : 'sk-ant-…'}
-          placeholderTextColor={C.faint}
-          autoCapitalize="none"
-          autoCorrect={false}
-          secureTextEntry
-          style={s.input}
-        />
-        <Btn title="儲存並測試" icon="check" style={{ marginTop: 10 }} disabled={!keyInput.trim()} loading={testing && !!keyInput} onPress={saveAndTest} />
-        {keyMsg ? <View style={{ marginTop: 10 }}><Notice tone={keyMsg.tone} text={keyMsg.text} /></View> : null}
-        <Pressable onPress={() => Linking.openURL('https://console.anthropic.com/settings/keys')} style={{ marginTop: 12 }}>
-          <Text style={s.link}>到 console.anthropic.com 建立金鑰 ›</Text>
-        </Pressable>
-      </Card>
-
-      <SectionTitle>AI 模型</SectionTitle>
-      <Card style={{ gap: 10 }}>
-        {MODELS.map((m) => (
-          <Pressable key={m.id} onPress={() => updateSettings({ model: m.id })} style={s.radioRow}>
-            <Icon name={settings.model === m.id ? 'dot-circle-o' : 'circle-o'} size={20} color={settings.model === m.id ? C.primary : C.faint} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.radioTitle}>{m.label}</Text>
-              <Text style={s.radioSub}>{m.note}</Text>
-            </View>
-          </Pressable>
-        ))}
+        {downloadError ? <Notice tone="bad" text={downloadError} /> : null}
+        {testMsg ? <Notice tone={testMsg.tone} text={testMsg.text} /> : null}
       </Card>
 
       <SectionTitle>英文難度</SectionTitle>
@@ -214,11 +231,9 @@ function VoiceRow({ label, selected, onPress }: { label: string; selected: boole
 }
 
 const s = StyleSheet.create({
-  keyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  keyText: { flex: 1, fontSize: 14, color: C.text, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  barBg: { height: 8, backgroundColor: C.line, borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
+  barFg: { height: 8, backgroundColor: C.primary, borderRadius: 4 },
   help: { fontSize: 13, color: C.sub, lineHeight: 19 },
-  input: { marginTop: 10, backgroundColor: C.bg, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11, fontSize: 15, color: C.text },
-  link: { color: C.primary, fontWeight: '700', fontSize: 14 },
   radioRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
   radioTitle: { fontSize: 15, fontWeight: '700', color: C.text },
   radioSub: { fontSize: 13, color: C.sub, marginTop: 2 },

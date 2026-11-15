@@ -9,15 +9,12 @@ appId: com.yaufan.englishpractice
     timeout: 60000
 - tapOn:
     id: "tab-settings"
+- assertVisible: "離線 AI 模型"
 - tapOn:
-    id: "key-input"
-- inputText: "sk-ant-invalid-test-key"
-- hideKeyboard
-- tapOn: "儲存並測試"
-- extendedWaitUntil:
-    visible: "API 金鑰無效.*"
-    timeout: 40000
-- takeScreenshot: 05a_bad_key
+    id: "model-qwen3.5-0.8b"
+- takeScreenshot: 05a_model_section
+- tapOn:
+    id: "model-qwen3.5-2b"
 - scrollUntilVisible:
     element: "稍慢"
     direction: DOWN

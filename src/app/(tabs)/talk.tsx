@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { TabPage } from '../../components/Page';
-import { Btn, Card, Icon, NeedKeyNotice, SectionTitle } from '../../components/ui';
+import { Btn, Card, Icon, NeedModelNotice, SectionTitle } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { CATEGORY_LABEL, SCENARIOS, type Category } from '../../data/scenarios';
 import { C, CAT_COLOR } from '../../theme';
@@ -16,7 +16,7 @@ export default function Talk() {
 
   return (
     <TabPage title="口說對話" subtitle="選一個情境，跟 AI 用語音一來一往">
-      <NeedKeyNotice />
+      <NeedModelNotice />
 
       <Card style={{ marginTop: 12 }}>
         <Text style={s.freeTitle}>自由聊天</Text>

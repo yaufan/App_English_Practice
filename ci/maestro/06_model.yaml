@@ -1,6 +1,7 @@
 appId: com.yaufan.englishpractice
 ---
-# Runs only when an API key secret exists. Never screenshot the settings page after the key is saved.
+# Downloads the light model on the emulator, then runs a real offline conversation,
+# the review, and an AI-written listening passage.
 - launchApp
 - tapOn:
     text: "Wait"
@@ -8,31 +9,41 @@ appId: com.yaufan.englishpractice
 - extendedWaitUntil:
     visible: "今日對話"
     timeout: 60000
+- takeScreenshot: 06a_need_model
 - tapOn:
     id: "tab-settings"
 - tapOn:
-    id: "key-input"
-- inputText: ${API_KEY}
-- hideKeyboard
-- tapOn: "儲存並測試"
+    id: "model-qwen3.5-0.8b"
+- tapOn:
+    id: "model-download"
+- takeScreenshot: 06b_downloading
 - extendedWaitUntil:
-    visible: "金鑰可以用.*"
-    timeout: 45000
+    visible:
+      id: "model-test"
+    timeout: 900000
+- tapOn:
+    id: "model-test"
+- extendedWaitUntil:
+    visible: "可以用了！.*"
+    timeout: 300000
+- takeScreenshot: 06c_model_test
 - tapOn:
     id: "tab-talk"
 - tapOn: "咖啡店點餐"
 - tapOn: "開始對話"
-- assertVisible: "Hi there! What can I get for you today?"
+- assertVisible: ".*What can I get for you today.*"
 - tapOn:
     id: "chat-input"
 - inputText: "i want latte big"
 - hideKeyboard
 - tapOn:
     id: "send-btn"
+- takeScreenshot: 06d_thinking
 - extendedWaitUntil:
-    visible: "更自然的說法"
-    timeout: 60000
-- takeScreenshot: 06a_ai_turn1
+    visible:
+      id: "ai-1"
+    timeout: 300000
+- takeScreenshot: 06e_turn1
 - tapOn:
     id: "chat-input"
 - inputText: "ice please and to go"
@@ -40,20 +51,21 @@ appId: com.yaufan.englishpractice
 - tapOn:
     id: "send-btn"
 - extendedWaitUntil:
-    notVisible: "對方正在回覆…"
-    timeout: 60000
-- takeScreenshot: 06b_ai_turn2
+    visible:
+      id: "ai-2"
+    timeout: 300000
+- takeScreenshot: 06f_turn2
 - tapOn:
     id: "hint-btn"
-- takeScreenshot: 06c_ai_hint
+- takeScreenshot: 06g_hint
 - tapOn:
     id: "hint-btn"
 - tapOn:
     id: "finish-btn"
 - extendedWaitUntil:
     visible: "整體回饋"
-    timeout: 90000
-- takeScreenshot: 06d_ai_summary
+    timeout: 600000
+- takeScreenshot: 06h_summary
 - back
 - tapOn:
     id: "tab-listen"
@@ -61,9 +73,10 @@ appId: com.yaufan.englishpractice
 - tapOn: "AI 工作"
 - tapOn: "介紹語音辨識系統"
 - tapOn: "產生短文"
+- takeScreenshot: 06i_generating
 - extendedWaitUntil:
     visible: "播放全文"
-    timeout: 120000
+    timeout: 600000
 - tapOn: "顯示英文"
 - tapOn: "顯示中文"
-- takeScreenshot: 06e_ai_passage
+- takeScreenshot: 06j_passage

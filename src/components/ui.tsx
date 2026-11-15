@@ -199,14 +199,14 @@ export function Notice({ text, tone = 'warn', action }: { text: string; tone?: '
   );
 }
 
-export function NeedKeyNotice() {
-  const { apiKey } = useStore();
+export function NeedModelNotice() {
+  const { modelReady, download } = useStore();
   const router = useRouter();
-  if (apiKey) return null;
+  if (modelReady) return null;
   return (
     <Notice
-      text="AI 功能需要先在「設定」貼上 Claude API 金鑰。"
-      action={<Btn small variant="secondary" title="去設定" onPress={() => router.push('/settings')} />}
+      text={download ? `離線模型下載中（${Math.round(download.fraction * 100)}%），好了就能用 AI 對話。` : 'AI 對話要先下載離線模型（一次就好，建議用 Wi-Fi）。'}
+      action={download ? undefined : <Btn small variant="secondary" title="去下載" onPress={() => router.push('/settings')} />}
     />
   );
 }

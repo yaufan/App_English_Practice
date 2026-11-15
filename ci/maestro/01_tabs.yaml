@@ -24,5 +24,5 @@ appId: com.yaufan.englishpractice
 - takeScreenshot: 01d_listen
 - tapOn:
     id: "tab-settings"
-- assertVisible: "Claude API 金鑰"
+- assertVisible: "離線 AI 模型"
 - takeScreenshot: 01e_settings

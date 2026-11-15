@@ -14,9 +14,10 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackPage } from '../../components/Page';
-import { Btn, Card, Icon, MicBtn, NeedKeyNotice, Notice, SectionTitle, SpeakBtn, Tag } from '../../components/ui';
+import { Btn, Card, Icon, MicBtn, NeedModelNotice, Notice, SectionTitle, SpeakBtn, Tag } from '../../components/ui';
 import { useStore } from '../../lib/store';
-import { callClaude, type ChatMessage } from '../../lib/claude';
+import { generate, partialReply, stopGenerating, type ChatMessage } from '../../lib/llm';
+import { SUMMARY_SCHEMA, TURN_SCHEMA } from '../../lib/schemas';
 import {
   START_MESSAGE,
   conversationSystem,
@@ -47,7 +48,7 @@ export default function Conversation() {
   const scenario = useMemo(() => (id === 'free' ? freeTalkScenario(topic ?? '') : getScenario(id)), [id, topic]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { apiKey, settings, saveItem, isSaved, recordTalk } = useStore();
+  const { modelReady, settings, saveItem, isSaved, recordTalk } = useStore();
 
   const [phase, setPhase] = useState<'intro' | 'chat' | 'summary'>('intro');
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -59,13 +60,30 @@ export default function Conversation() {
   const [finished, setFinished] = useState(false);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [summaryBusy, setSummaryBusy] = useState(false);
+  const [streaming, setStreaming] = useState<string | null>(null);
+  const [modelLoad, setModelLoad] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState(0);
   const history = useRef<ChatMessage[]>([]);
   const keySeq = useRef(0);
   const scrollRef = useRef<ScrollViewInstance>(null);
 
   const rec = useRecognizer((t) => setDraft((d) => (d.trim() ? `${d.trim()} ${t}` : t)));
 
-  useEffect(() => () => stopSpeaking(), []);
+  useEffect(
+    () => () => {
+      stopSpeaking();
+      stopGenerating();
+    },
+    [],
+  );
+
+  // seconds counter while the model writes the review
+  useEffect(() => {
+    if (!summaryBusy) return;
+    setElapsed(0);
+    const t = setInterval(() => setElapsed((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [summaryBusy]);
 
   if (!scenario) {
     return (
@@ -77,8 +95,10 @@ export default function Conversation() {
 
   const tts = { rate: settings.rate, voice: settings.voice };
   const lastAi = [...turns].reverse().find((t) => t.role === 'ai');
+  const aiIndex = new Map<number, number>();
+  turns.filter((t) => t.role === 'ai').forEach((t, i) => aiIndex.set(t.key, i));
 
-  function pushAi(r: TurnReply) {
+  function pushAi(r: TurnReply, alreadySpoken = false) {
     setTurns((prev) => {
       const next = [...prev];
       // the correction is about the learner's latest message
@@ -93,27 +113,44 @@ export default function Conversation() {
       return next;
     });
     if (r.done) setFinished(true);
-    if (settings.autoPlay) speak(r.reply, tts);
+    if (settings.autoPlay && !alreadySpoken) speak(r.reply, tts);
   }
 
   async function askAi() {
     if (!scenario) return;
     setBusy(true);
     setErr(null);
+    setStreaming(null);
+    let spoke = false;
     try {
-      const text = await callClaude({
-        apiKey,
-        model: settings.model,
+      const out = await generate({
+        modelId: settings.modelId,
         system: conversationSystem(scenario, settings.level),
         messages: history.current,
-        maxTokens: 500,
+        schema: TURN_SCHEMA,
+        maxTokens: 350,
+        temperature: 0.7,
+        onLoadProgress: (p) => setModelLoad(p < 1 ? p : null),
+        onText: (raw) => {
+          const part = partialReply(raw);
+          if (!part) return;
+          setModelLoad(null);
+          setStreaming(part.text);
+          // start speaking as soon as the English line is complete
+          if (part.complete && !spoke && settings.autoPlay && part.text) {
+            spoke = true;
+            speak(part.text, tts);
+          }
+        },
       });
-      const r = parseTurn(text);
-      history.current = [...history.current, { role: 'assistant', content: text }];
-      pushAi(r);
+      const r = parseTurn(out.text);
+      history.current = [...history.current, { role: 'assistant', content: JSON.stringify(r) }];
+      pushAi(r, spoke);
     } catch (e) {
       setErr((e as Error).message);
     } finally {
+      setStreaming(null);
+      setModelLoad(null);
       setBusy(false);
     }
   }
@@ -170,9 +207,8 @@ export default function Conversation() {
     setSummaryBusy(true);
     setErr(null);
     try {
-      const text = await callClaude({
-        apiKey,
-        model: settings.model,
+      const out = await generate({
+        modelId: settings.modelId,
         system: summarySystem(settings.level),
         messages: [
           {
@@ -180,10 +216,11 @@ export default function Conversation() {
             content: `Scenario: ${scenario.titleEn}. Goal: ${scenario.goal}\n\nTranscript:\n${transcriptText(turns)}`,
           },
         ],
-        maxTokens: 1200,
-        timeoutMs: 60_000,
+        schema: SUMMARY_SCHEMA,
+        maxTokens: 900,
+        temperature: 0.5,
       });
-      setSummary(parseSummary(text));
+      setSummary(parseSummary(out.text));
       recordTalk(scenario.id);
     } catch (e) {
       setErr((e as Error).message);
@@ -256,8 +293,8 @@ export default function Conversation() {
         </View>
 
         <View style={{ marginTop: 18, gap: 12 }}>
-          <NeedKeyNotice />
-          <Btn title="開始對話" icon="play" onPress={start} disabled={!apiKey} />
+          <NeedModelNotice />
+          <Btn title="開始對話" icon="play" onPress={start} disabled={!modelReady} />
         </View>
       </StackPage>
     );
@@ -271,7 +308,17 @@ export default function Conversation() {
         {summaryBusy ? (
           <View style={s.center}>
             <ActivityIndicator size="large" color={C.primary} />
-            <Text style={s.loadingText}>正在整理這次對話的回饋…</Text>
+            <Text style={s.loadingText}>手機上的 AI 正在整理回饋…（{elapsed} 秒）</Text>
+            <Text style={s.loadingSub}>通常要 20～60 秒，看手機速度。</Text>
+            <Btn
+              small
+              variant="ghost"
+              title="先不要了，回到對話"
+              onPress={() => {
+                stopGenerating();
+                setPhase('chat');
+              }}
+            />
           </View>
         ) : err ? (
           <View style={{ gap: 12 }}>
@@ -372,7 +419,7 @@ export default function Conversation() {
         {turns.map((t) =>
           t.role === 'ai' ? (
             <View key={t.key} style={s.aiWrap}>
-              <Pressable onPress={() => speak(t.text, tts)} style={s.aiBubble}>
+              <Pressable testID={`ai-${aiIndex.get(t.key)}`} onPress={() => speak(t.text, tts)} style={s.aiBubble}>
                 <Text style={s.aiText}>{t.text}</Text>
                 {(zhOpen[t.key] ?? settings.showZh) && t.zh ? <Text style={s.aiZh}>{t.zh}</Text> : null}
               </Pressable>
@@ -405,12 +452,20 @@ export default function Conversation() {
             </View>
           ),
         )}
-        {busy && (
+        {busy && streaming ? (
+          <View style={s.aiWrap}>
+            <View style={s.aiBubble}>
+              <Text style={s.aiText}>{streaming}</Text>
+            </View>
+          </View>
+        ) : busy ? (
           <View style={s.typing}>
             <ActivityIndicator size="small" color={C.primary} />
-            <Text style={s.typingText}>對方正在回覆…</Text>
+            <Text style={s.typingText}>
+              {modelLoad !== null ? `載入模型中 ${Math.round(modelLoad * 100)}%…` : '對方正在想…'}
+            </Text>
           </View>
-        )}
+        ) : null}
         {err && (
           <View style={{ gap: 8 }}>
             <Notice tone="bad" text={err} />
@@ -570,6 +625,7 @@ const s = StyleSheet.create({
   sideText: { fontSize: 12, color: C.sub, fontWeight: '700' },
   center: { alignItems: 'center', justifyContent: 'center', paddingVertical: 80, gap: 14 },
   loadingText: { color: C.sub, fontSize: 15 },
+  loadingSub: { color: C.faint, fontSize: 13 },
   sumHead: { fontSize: 15, fontWeight: '800', color: C.text },
   sumBody: { fontSize: 15, lineHeight: 23, color: C.text, marginTop: 8 },
   goodRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },

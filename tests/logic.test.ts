@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schedule, buildQueue, previewInterval, newCard, countDue } from '../src/lib/srs.ts';
 import { similarity, isCloseEnough, diffWords, normalize } from '../src/lib/match.ts';
-import { parseTurn, parseSummary, parsePassage, extractJson } from '../src/lib/prompts.ts';
+import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem } from '../src/lib/prompts.ts';
+import { toTaiwan } from '../src/lib/zh.ts';
+import { TURN_SCHEMA, SUMMARY_SCHEMA, PASSAGE_SCHEMA } from '../src/lib/schemas.ts';
 import { DECKS } from '../src/data/decks.ts';
 import { PASSAGES } from '../src/data/listening.ts';
 import { SCENARIOS } from '../src/data/scenarios.ts';
@@ -143,4 +145,32 @@ test('content: passages and scenarios are well formed', () => {
     assert.ok(s.opener.en && s.opener.zh && s.openerHint.en && s.openerHint.zh, s.id);
     assert.equal(s.phrases.length, 4);
   }
+});
+
+test('offline model: reply text is shown while it streams', () => {
+  assert.deepEqual(partialReply('{"reply":"Sure! What si'), { text: 'Sure! What si', complete: false });
+  assert.deepEqual(partialReply('{"reply":"Hot or iced?","reply_zh":"'), { text: 'Hot or iced?', complete: true });
+  assert.equal(partialReply('{"rep'), null);
+
+});
+
+test('offline model: Simplified Chinese becomes Taiwan Traditional', () => {
+  assert.equal(toTaiwan('这个说法比较自然'), '這個說法比較自然');
+  assert.equal(toTaiwan('Hello there'), 'Hello there');
+  assert.equal(toTaiwan('已經是繁體'), '已經是繁體');
+});
+
+test('offline model: schemas require every field they define', () => {
+  for (const sc of [TURN_SCHEMA, SUMMARY_SCHEMA, PASSAGE_SCHEMA] as { properties: object; required: string[] }[]) {
+    assert.deepEqual([...sc.required].sort(), Object.keys(sc.properties).sort());
+  }
+  assert.equal(Object.keys(TURN_SCHEMA.properties)[0], 'reply', 'reply must stream first');
+});
+
+test('offline model: the worked example in the prompt parses', () => {
+  const sys = conversationSystem(SCENARIOS[0], 'A2');
+  const ex = sys.slice(sys.lastIndexOf('{"reply"'));
+  const r = parseTurn(ex);
+  assert.equal(r.reply, 'Sure! What size would you like?');
+  assert.equal(r.correction?.better, "I'd like a hot coffee, please.");
 });

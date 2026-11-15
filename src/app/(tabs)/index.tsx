@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { TabPage } from '../../components/Page';
-import { Btn, Card, Icon, NeedKeyNotice, SectionTitle, Tag } from '../../components/ui';
+import { Btn, Card, Icon, NeedModelNotice, SectionTitle, Tag } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { countDue, countLearned } from '../../lib/srs';
 import { ALL_DECK_ID, deckItems } from '../../lib/vocab';
@@ -40,7 +40,7 @@ export default function Today() {
         </View>
       }
     >
-      <NeedKeyNotice />
+      <NeedModelNotice />
 
       <SectionTitle>單字複習</SectionTitle>
       <Card>

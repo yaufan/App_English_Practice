@@ -22,27 +22,20 @@ run_flow() {
   maestro test "$@" "ci/maestro/$name.yaml" > "$OUT/$name.log" 2>&1
   local code=$?
   echo "$name exit=$code" | tee -a "$OUT/summary.txt"
-  if [ "$name" != "06_ai" ]; then
-    adb exec-out screencap -p > "$OUT/shots/${name}_end.png" 2>/dev/null
-    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb pull /sdcard/ui.xml "$OUT/${name}_end.xml" > /dev/null 2>&1
-  fi
+  adb exec-out screencap -p > "$OUT/shots/${name}_end.png" 2>/dev/null
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb pull /sdcard/ui.xml "$OUT/${name}_end.xml" > /dev/null 2>&1
 }
 
 for f in 01_tabs 02_conversation 03_words 04_listening 05_settings; do
   run_flow "$f"
 done
 
-if [ -n "${API_KEY:-}" ]; then
-  run_flow 06_ai -e "API_KEY=$API_KEY"
-else
-  echo "06_ai skipped (no API key secret)" | tee -a "$OUT/summary.txt"
-fi
+run_flow 06_model
 
 adb logcat -d > "$OUT/logcat.txt" 2>&1
 adb logcat -b crash -d > "$OUT/logcat-crash.txt" 2>&1
 grep -nE "FATAL EXCEPTION|AndroidRuntime: |ReactNativeJS|ExceptionsManager|com.yaufan.englishpractice.*(crash|Crash|died)" "$OUT/logcat.txt" > "$OUT/logcat-errors.txt" || true
-# never keep anything that could contain the key
-grep -v "sk-ant" "$OUT/logcat.txt" > "$OUT/logcat.tmp" && mv "$OUT/logcat.tmp" "$OUT/logcat.txt"
+grep -iE "RNLlama|llama|ggml" "$OUT/logcat.txt" | tail -80 > "$OUT/logcat-llama.txt" || true
 # Maestro may save takeScreenshot files in the working dir or under ~/.maestro; collect ours by name.
 find "$HOME" /tmp \( -path "$PWD/node_modules" -o -path "$PWD/android" -o -path "$PWD/$OUT" \) -prune -o \
   -type f -name "0[1-6][a-z]_*.png" -newer "$OUT/.start" -print 2>/dev/null | while read -r f; do cp "$f" "$OUT/shots/"; done

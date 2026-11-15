@@ -35,56 +35,54 @@ export type Summary = {
 
 export const START_MESSAGE = '(The conversation starts now. Please say your first line.)';
 
+// Prompts are written for a small on-device model: short rules, one worked example,
+// and the JSON shape is enforced separately by a schema (see schemas.ts).
+
 export function conversationSystem(s: Scenario, level: Level): string {
-  const roleBlock = s.examiner
+  const role = s.examiner
     ? `You are ${s.aiRole}. The learner is ${s.userRole}.
 Setting: ${s.setting}
 Plan: ${s.goal}
-Act like a real examiner: ask one question at a time, give a very short natural reaction (a few words) before the next question, and do not teach during the test.`
-    : `You play ${s.aiRole}. The learner plays ${s.userRole}.
+Ask one question at a time. Give a few words of reaction, then the next question. Do not teach.`
+    : `You are ${s.aiRole}. The learner is ${s.userRole}.
 Setting: ${s.setting}
-Conversation goal: ${s.goal}
-Stay in character and keep the conversation moving toward the goal.`;
+Goal: ${s.goal}
+Stay in character and move toward the goal.`;
 
-  return `You are an English speaking partner inside a practice app for a Taiwanese adult whose English is weak.
+  return `You are an English speaking partner for a Taiwanese adult with weak English.
+${role}
 
-${roleBlock}
+Level: ${LEVEL_RULE[level]}
+Rules:
+- "reply": 1 or 2 short spoken sentences, ending with one simple question. No emojis.
+- "reply_zh": Traditional Chinese (Taiwan) translation of reply.
+- The learner's text comes from speech recognition: ignore punctuation, capital letters and small recognition errors.
+- "correction": if the learner's English is wrong or unnatural, or they used Chinese, give the correct English in "better". Otherwise null.
+- "hint": one easy sentence the learner could say next to answer your question, with Chinese.
+- "done": true only when the goal is finished (or after about 8 learner turns); then say goodbye in reply.
 
-Language level: ${LEVEL_RULE[level]}
-Rules for your reply:
-- 1 or 2 short sentences, then exactly one simple question (unless the conversation is finished).
-- Spoken style. No lists, no emojis, no stage directions.
-- The learner's message comes from speech recognition. Ignore capitalization, punctuation, and obvious recognition mistakes. Never comment on spelling.
-- If the learner uses Chinese, understand it, answer in English, and put the English way to say what they meant in "correction".
-- If the learner's English has a real grammar or word-choice problem, or sounds unnatural, give ONE short correction. If it is fine, use null.
-- "hint" is one natural sentence the learner could say next, at their level, that answers your question.
-- When the goal is reached (or after about 8 to 10 learner turns), close the conversation politely and set "done" to true.
-- All Chinese must be Traditional Chinese as used in Taiwan.
-
-Return ONLY one JSON object, no markdown fences:
-{"reply": "your English line", "reply_zh": "繁體中文翻譯", "correction": null or {"you_said": "what they said", "better": "a better way to say it", "better_zh": "better 的中文意思", "why_zh": "一句繁中說明"}, "hint": {"en": "...", "zh": "..."}, "done": false}`;
+Example. Learner: "i want coffee hot"
+{"reply":"Sure! What size would you like?","reply_zh":"好的！你要什麼大小？","correction":{"you_said":"i want coffee hot","better":"I'd like a hot coffee, please.","better_zh":"我想要一杯熱咖啡。","why_zh":"點餐說 I'd like 比較禮貌；hot 要放在 coffee 前面。"},"hint":{"en":"A large one, please.","zh":"大杯的，謝謝。"},"done":false}`;
 }
 
 export function summarySystem(level: Level): string {
-  return `You are a kind English speaking coach for a Taiwanese adult whose English is weak (${LEVEL_RULE[level]}).
-You will get the transcript of a practice conversation. Lines starting with "Learner:" are the learner (from speech recognition, so ignore punctuation and recognition noise).
-Write feedback in Traditional Chinese (Taiwan), short and encouraging, focused on the most useful fixes.
-
-Return ONLY one JSON object, no markdown fences:
-{"overall_zh": "兩三句整體評語", "good_zh": ["做得好的地方", "..."], "corrections": [{"you_said": "...", "better": "...", "better_zh": "中文意思", "why_zh": "為什麼這樣說比較好"}], "phrases": [{"en": "useful phrase from or for this conversation", "zh": "中文"}], "next_zh": "下次可以試試的一件事"}
-Limits: good_zh 1-3 items, corrections 0-5 items (most important first), phrases 3-6 items.`;
+  return `You are a kind English coach for a Taiwanese adult with weak English (${LEVEL_RULE[level]}).
+You get a practice conversation. "Learner:" lines are the learner (speech recognition, so ignore punctuation).
+Write short, encouraging feedback in Traditional Chinese (Taiwan):
+- overall_zh: 2 sentences about how it went.
+- good_zh: 1 to 3 things done well.
+- corrections: up to 4 of the learner's most important mistakes, each with the better English, its Chinese meaning, and why.
+- phrases: 3 to 5 useful English sentences for this situation, with Chinese.
+- next_zh: one thing to try next time.`;
 }
 
 export function passageSystem(level: Level): string {
-  return `You write short listening practice passages for a Taiwanese adult whose English is weak.
+  return `You write short English listening passages for a Taiwanese adult with weak English.
 Level: ${LEVEL_RULE[level]}
-Write 6 to 8 sentences. Natural spoken or announcement style, like real life or TOEIC listening.
-Then write 3 multiple-choice questions (4 options each) that can be answered from the passage, and 3 to 5 useful words or phrases from it.
-All Chinese must be Traditional Chinese as used in Taiwan.
-
-Return ONLY one JSON object, no markdown fences:
-{"title": "繁中標題", "titleEn": "English title", "sentences": [{"en": "...", "zh": "..."}], "questions": [{"q": "...", "qZh": "...", "options": ["...", "...", "...", "..."], "answer": 0, "explainZh": "..."}], "vocab": [{"en": "...", "zh": "..."}]}
-"answer" is the 0-based index of the correct option.`;
+- sentences: 6 to 8 short sentences in natural spoken or announcement style, each with a Traditional Chinese (Taiwan) translation.
+- questions: 3 multiple-choice questions answered by the passage. 4 options each, only one correct. "answer" is the index (0-3) of the correct option. Explain the answer in Chinese.
+- vocab: 3 to 5 useful words or phrases from the passage with Chinese.
+- title: a short Chinese title; titleEn: an English title.`;
 }
 
 /** Extract the first JSON object from model text (tolerates fences or stray text). */
@@ -176,4 +174,17 @@ export function parsePassage(text: string, category: Category): Passage {
 
 export function transcriptText(turns: { role: 'ai' | 'me'; text: string }[]): string {
   return turns.map((t) => `${t.role === 'ai' ? 'Partner' : 'Learner'}: ${t.text}`).join('\n');
+}
+
+/** Pulls the (possibly unfinished) "reply" string out of partial JSON while the model streams. */
+export function partialReply(raw: string): { text: string; complete: boolean } | null {
+  const m = raw.match(/"reply"\s*:\s*"((?:[^"\\]|\\.)*)("?)/);
+  if (!m) return null;
+  let text = m[1];
+  try {
+    text = JSON.parse(`"${text.replace(/\\$/, '')}"`);
+  } catch {
+    // keep the raw text if an escape sequence is cut in half
+  }
+  return { text, complete: m[2] === '"' };
 }
