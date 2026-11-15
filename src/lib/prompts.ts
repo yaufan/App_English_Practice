@@ -112,6 +112,27 @@ function asCorrection(v: unknown): Correction | null {
   return { you_said: str(o.you_said), better, better_zh: str(o.better_zh), why_zh: str(o.why_zh) };
 }
 
+// ── Guards: a small model sometimes writes Chinese where English belongs, or "corrects"
+// a sentence into the same sentence. Those outputs are dropped instead of shown to a learner.
+
+const CJK = /[\u3400-\u9fff]/;
+export const hasChinese = (s: string) => CJK.test(s);
+const loose = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+function usableCorrection(c: Correction | null): Correction | null {
+  if (!c) return null;
+  if (hasChinese(c.better)) return null;
+  if (c.you_said && loose(c.you_said) === loose(c.better)) return null;
+  return c;
+}
+
+function englishPair(p: Pair | null): Pair | null {
+  return p && !hasChinese(p.en) ? p : null;
+}
+
+/** Learner turns needed before the app accepts that the conversation is finished. */
+export const MIN_TURNS_BEFORE_DONE = 4;
+
 export function parseTurn(text: string): TurnReply {
   let o: Record<string, unknown>;
   try {
@@ -125,8 +146,8 @@ export function parseTurn(text: string): TurnReply {
   return {
     reply,
     reply_zh: str(o.reply_zh),
-    correction: asCorrection(o.correction),
-    hint: asPair(o.hint) ?? { en: '', zh: '' },
+    correction: usableCorrection(asCorrection(o.correction)),
+    hint: englishPair(asPair(o.hint)) ?? { en: '', zh: '' },
     done: o.done === true,
   };
 }
@@ -137,8 +158,12 @@ export function parseSummary(text: string): Summary {
   return {
     overall_zh: str(o.overall_zh),
     good_zh: arr(o.good_zh).map((x) => str(x)).filter(Boolean),
-    corrections: arr(o.corrections).map(asCorrection).filter((x): x is Correction => !!x),
-    phrases: arr(o.phrases).map(asPair).filter((x): x is Pair => !!x),
+    corrections: arr(o.corrections)
+      .map((c) => usableCorrection(asCorrection(c)))
+      .filter((x): x is Correction => !!x),
+    phrases: arr(o.phrases)
+      .map((p) => englishPair(asPair(p)))
+      .filter((x): x is Pair => !!x),
     next_zh: str(o.next_zh),
   };
 }
@@ -146,15 +171,18 @@ export function parseSummary(text: string): Summary {
 export function parsePassage(text: string, category: Category): Passage {
   const o = extractJson(text) as Record<string, unknown>;
   const arr = (v: unknown) => (Array.isArray(v) ? v : []);
-  const sentences = arr(o.sentences).map(asPair).filter((x): x is Pair => !!x);
-  if (sentences.length < 2) throw new Error('AI 產生的短文太短，請再試一次');
+  const sentences = arr(o.sentences)
+    .map(asPair)
+    .filter((x): x is Pair => !!x && !hasChinese(x.en) && /[a-zA-Z]/.test(x.en));
+  if (sentences.length < 4) throw new Error('AI 這次寫的短文不能用（英文句子太少或混了中文），請再產生一次。');
   const questions: Question[] = arr(o.questions)
     .map((q) => {
       if (!q || typeof q !== 'object') return null;
       const r = q as Record<string, unknown>;
       const options = arr(r.options).map((x) => str(x)).filter(Boolean);
       const answer = typeof r.answer === 'number' ? Math.round(r.answer) : -1;
-      if (!str(r.q) || options.length < 2 || answer < 0 || answer >= options.length) return null;
+      if (!str(r.q) || hasChinese(str(r.q)) || options.length < 2 || answer < 0 || answer >= options.length) return null;
+      if (options.some(hasChinese)) return null;
       return { q: str(r.q), qZh: str(r.qZh), options, answer, explainZh: str(r.explainZh) };
     })
     .filter((x): x is Question => !!x);
@@ -166,7 +194,9 @@ export function parsePassage(text: string, category: Category): Passage {
     titleEn: str(o.titleEn),
     sentences,
     questions,
-    vocab: arr(o.vocab).map(asPair).filter((x): x is Pair => !!x),
+    vocab: arr(o.vocab)
+      .map((p) => englishPair(asPair(p)))
+      .filter((x): x is Pair => !!x),
     generated: true,
     createdAt: now,
   };

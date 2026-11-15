@@ -1,6 +1,6 @@
 appId: com.yaufan.englishpractice
 ---
-# Downloads the light model on the emulator, then runs a real offline conversation,
+# Downloads the standard (default) model on the emulator, then runs a real offline conversation,
 # the review, and an AI-written listening passage.
 - launchApp
 - tapOn:
@@ -13,7 +13,7 @@ appId: com.yaufan.englishpractice
 - tapOn:
     id: "tab-settings"
 - tapOn:
-    id: "model-qwen3.5-0.8b"
+    id: "model-qwen3.5-2b"
 - tapOn:
     id: "model-download"
 - takeScreenshot: 06b_downloading

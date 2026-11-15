@@ -102,7 +102,7 @@ test('prompts: summary and passage parsing validate fields', () => {
     JSON.stringify({
       title: '測試',
       titleEn: 'Test',
-      sentences: [{ en: 'A.', zh: '甲' }, { en: 'B.', zh: '乙' }],
+      sentences: [{ en: 'A.', zh: '甲' }, { en: 'B.', zh: '乙' }, { en: 'C.', zh: '丙' }, { en: 'D.', zh: '丁' }],
       questions: [
         { q: 'Q1', qZh: '問', options: ['a', 'b', 'c', 'd'], answer: 2, explainZh: '因為' },
         { q: 'Q2', options: ['a', 'b'], answer: 5 },
@@ -173,4 +173,18 @@ test('offline model: the worked example in the prompt parses', () => {
   const r = parseTurn(ex);
   assert.equal(r.reply, 'Sure! What size would you like?');
   assert.equal(r.correction?.better, "I'd like a hot coffee, please.");
+});
+
+test('guards: unusable model output is dropped', () => {
+  const t = parseTurn('{"reply":"Nice.","reply_zh":"好","correction":{"you_said":"ice please","better":"Ice, please.","better_zh":"冰","why_zh":"x"},"hint":{"en":"我要冰的","zh":"我要冰的"},"done":false}');
+  assert.equal(t.correction, null, 'same sentence is not a correction');
+  assert.equal(t.hint.en, '', 'Chinese hint is dropped');
+  assert.throws(
+    () =>
+      parsePassage(
+        JSON.stringify({ title: 't', titleEn: 'T', sentences: [1, 2, 3, 4, 5, 6].map(() => ({ en: '我們需要新工具。', zh: '我們需要新工具。' })), questions: [], vocab: [] }),
+        'work',
+      ),
+    /不能用/,
+  );
 });

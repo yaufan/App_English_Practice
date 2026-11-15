@@ -19,6 +19,7 @@ import { useStore } from '../../lib/store';
 import { generate, partialReply, stopGenerating, type ChatMessage } from '../../lib/llm';
 import { SUMMARY_SCHEMA, TURN_SCHEMA } from '../../lib/schemas';
 import {
+  MIN_TURNS_BEFORE_DONE,
   START_MESSAGE,
   conversationSystem,
   parseSummary,
@@ -112,7 +113,8 @@ export default function Conversation() {
       next.push({ key, role: 'ai', text: r.reply, zh: r.reply_zh, hint: r.hint });
       return next;
     });
-    if (r.done) setFinished(true);
+    const learnerTurns = history.current.filter((m) => m.role === 'user' && m.content !== START_MESSAGE).length;
+    if (r.done && learnerTurns >= MIN_TURNS_BEFORE_DONE) setFinished(true);
     if (settings.autoPlay && !alreadySpoken) speak(r.reply, tts);
   }
 

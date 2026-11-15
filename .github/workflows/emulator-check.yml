@@ -43,18 +43,21 @@ jobs:
           curl -sSIL "${{ matrix.url }}" | grep -iE "^HTTP|content-length" | tail -3
           curl -fL --retry 3 -o model.gguf "${{ matrix.url }}"
           ls -la model.gguf
-      - name: Download llama.cpp server
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # Build the same llama.cpp commit that llama.rn ships, so the CI check matches the phone.
+      - name: Build llama.cpp server (same version as the app)
         run: |
+          LLAMA_COMMIT=$(sed -n "s/.*BUILD_COMMIT = '\([0-9a-f]*\)'.*/\1/p" node_modules/llama.rn/src/version.ts)
+          echo "llama.cpp commit: $LLAMA_COMMIT"
           mkdir -p llama && cd llama
-          gh release download --repo ggml-org/llama.cpp --pattern '*bin-ubuntu-x64.zip' || gh release download --repo ggml-org/llama.cpp --pattern '*bin-ubuntu-x64.tar.gz'
-          for f in *.zip; do [ -f "$f" ] && unzip -q "$f"; done
-          for f in *.tar.gz; do [ -f "$f" ] && tar -xzf "$f"; done
-          find . -name llama-server -type f | head -1
+          git init -q && git remote add origin https://github.com/ggml-org/llama.cpp
+          git fetch -q --depth 1 origin "$LLAMA_COMMIT" && git checkout -q FETCH_HEAD || { git fetch -q --depth 1 origin master && git checkout -q FETCH_HEAD; }
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF > /dev/null
+          cmake --build build -j4 --target llama-server > /dev/null
+          ls -la build/bin/llama-server
+
       - name: Check replies with the app's prompts
         run: |
-          SERVER=$(find "$PWD/llama" -name llama-server -type f | head -1)
+          SERVER="$PWD/llama/build/bin/llama-server"
           export LD_LIBRARY_PATH="$(dirname "$SERVER"):${LD_LIBRARY_PATH:-}"
           "$SERVER" -m model.gguf --jinja -c 4096 --port 8080 > server.log 2>&1 &
           for i in $(seq 1 120); do curl -sf http://127.0.0.1:8080/health > /dev/null && break; sleep 2; done
@@ -65,7 +68,7 @@ jobs:
         if: always()
         with:
           name: prompt-results-${{ matrix.name }}
-          path: ci-results/
+          path: ci-results/prompt-eval-*.md
 
   emulator:
     runs-on: ubuntu-latest

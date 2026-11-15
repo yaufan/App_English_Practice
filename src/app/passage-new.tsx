@@ -46,17 +46,27 @@ export default function NewPassage() {
     setErr(null);
     try {
       const t = topic.trim() || IDEAS[cat][Math.floor(Math.random() * IDEAS[cat].length)];
-      setChars(0);
-      const out = await generate({
-        modelId: settings.modelId,
-        system: passageSystem(settings.level),
-        messages: [{ role: 'user', content: `Type: ${STYLE[cat]}.\nTopic (may be written in Chinese): ${t}` }],
-        schema: PASSAGE_SCHEMA,
-        maxTokens: 1400,
-        temperature: 0.7,
-        onText: (raw) => setChars(raw.length),
-      });
-      const p = parsePassage(out.text, cat);
+      const once = async () => {
+        setChars(0);
+        const out = await generate({
+          modelId: settings.modelId,
+          system: passageSystem(settings.level),
+          messages: [{ role: 'user', content: `Type: ${STYLE[cat]}.\nTopic (may be written in Chinese): ${t}` }],
+          schema: PASSAGE_SCHEMA,
+          maxTokens: 1400,
+          temperature: 0.7,
+          onText: (raw) => setChars(raw.length),
+        });
+        return parsePassage(out.text, cat);
+      };
+      let p;
+      try {
+        p = await once();
+      } catch (first) {
+        // a small model sometimes writes Chinese in the English fields; one retry usually fixes it
+        if (!(first as Error).message.includes('不能用')) throw first;
+        p = await once();
+      }
       addPassage(p);
       router.replace({ pathname: '/passage/[id]', params: { id: p.id } });
     } catch (e) {
