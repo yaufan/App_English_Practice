@@ -7,6 +7,8 @@ import {
   START_MESSAGE,
   conversationSystem,
   parseTurn,
+  buildChatPrompt,
+  CHAT_STOP,
   summarySystem,
   parseSummary,
   passageSystem,
@@ -23,17 +25,17 @@ let totalTokens = 0;
 let totalMs = 0;
 let rawSimplified = 0;
 
-/** Same settings the app uses (see src/lib/llm.ts): schema-constrained, thinking off, then OpenCC to Taiwan Chinese. */
+/** Same request the app makes (see src/lib/llm.ts): hand-built prompt, schema grammar, then OpenCC to Taiwan Chinese. */
 async function callModel(o: { system: string; messages: ChatMessage[]; schema: object; maxTokens: number; temperature: number }) {
   const t0 = Date.now();
-  const res = await fetch(`${URL_BASE}/v1/chat/completions`, {
+  const res = await fetch(`${URL_BASE}/completion`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      messages: [{ role: 'system', content: o.system }, ...o.messages],
-      response_format: { type: 'json_schema', json_schema: { strict: true, schema: o.schema } },
-      chat_template_kwargs: { enable_thinking: false },
-      max_tokens: o.maxTokens,
+      prompt: buildChatPrompt(o.system, o.messages),
+      json_schema: o.schema,
+      stop: CHAT_STOP,
+      n_predict: o.maxTokens,
       temperature: o.temperature,
       top_p: 0.9,
       top_k: 40,
@@ -41,10 +43,10 @@ async function callModel(o: { system: string; messages: ChatMessage[]; schema: o
     }),
   });
   if (!res.ok) throw new Error(`llama-server ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const data = (await res.json()) as { choices: { message: { content: string } }[]; usage?: { completion_tokens?: number } };
-  const raw = data.choices[0].message.content ?? '';
+  const data = (await res.json()) as { content: string; tokens_predicted?: number };
+  const raw = data.content ?? '';
   if (SIMPLIFIED.test(raw)) rawSimplified += 1;
-  totalTokens += data.usage?.completion_tokens ?? 0;
+  totalTokens += data.tokens_predicted ?? 0;
   totalMs += Date.now() - t0;
   return { text: toTaiwan(raw), ms: Date.now() - t0 };
 }

@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { Directory, File, Paths } from 'expo-file-system';
 import { initLlama, type LlamaContext } from 'llama.rn';
 import { toTaiwan } from './zh';
+import { CHAT_STOP, buildChatPrompt } from './prompts';
 
 export { partialReply } from './prompts';
 
@@ -219,19 +220,10 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
     let acc = '';
     const res = await c.completion(
       {
-        messages: [{ role: 'system', content: opts.system }, ...opts.messages],
-        // llama.rn leaves this unset by default; without it the model writes its own
-        // "<|im_start|>assistant" header and starts thinking instead of answering
-        jinja: true,
-        add_generation_prompt: true,
+        prompt: buildChatPrompt(opts.system, opts.messages),
+        // with a plain prompt, llama.rn turns the schema into a grammar that applies from the first token
         response_format: opts.schema ? { type: 'json_schema', json_schema: { strict: true, schema: opts.schema } } : undefined,
-        // Qwen3.5 thinks out loud by default; turn it off both ways the template understands,
-        // and split off any reasoning that still slips through so it never reaches the screen.
-        enable_thinking: false,
-        chat_template_kwargs: { enable_thinking: false },
-        reasoning_format: 'auto',
-        // if the template still opens a thinking block, close it right away so the JSON answer starts at once
-        thinking_budget_tokens: 0,
+        stop: CHAT_STOP,
         n_predict: opts.maxTokens ?? 400,
         temperature: opts.temperature ?? 0.6,
         top_p: 0.9,
@@ -244,7 +236,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
         opts.onText(acc);
       },
     );
-    const text = toTaiwan(stripChatNoise(res.content || res.text || acc));
+    const text = toTaiwan(stripChatNoise(res.text || acc));
     const tps = res.timings?.predicted_per_second ?? 0;
     if (!text.trim()) throw new LlmError('模型沒有產生內容，請再試一次。');
     return { text, tokensPerSecond: Math.round(tps * 10) / 10, ms: Date.now() - t0 };

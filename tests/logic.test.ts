@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schedule, buildQueue, previewInterval, newCard, countDue } from '../src/lib/srs.ts';
 import { similarity, isCloseEnough, diffWords, normalize } from '../src/lib/match.ts';
-import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem, cleanZh } from '../src/lib/prompts.ts';
+import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem, cleanZh, buildChatPrompt } from '../src/lib/prompts.ts';
 import { toTaiwan } from '../src/lib/zh.ts';
 import { TURN_SCHEMA, SUMMARY_SCHEMA, PASSAGE_SCHEMA } from '../src/lib/schemas.ts';
 import { DECKS } from '../src/data/decks.ts';
@@ -201,4 +201,11 @@ test('guards: stray JSON punctuation is trimmed from Chinese text', () => {
   assert.equal(s.overall_zh, '很好');
   assert.equal(s.corrections[0].better_zh, '我喜歡跑步。');
   assert.equal(s.phrases[0].en, 'How much is it?');
+});
+
+test('offline model: prompt ends with a closed empty thinking block', () => {
+  const p = buildChatPrompt('SYS', [{ role: 'user', content: 'hi' }, { role: 'assistant', content: '{}' }, { role: 'user', content: 'ok' }]);
+  assert.ok(p.startsWith('<|im_start|>system\nSYS<|im_end|>'));
+  assert.ok(p.includes('<|im_start|>user\nok<|im_end|>'));
+  assert.ok(p.endsWith('<|im_start|>assistant\n<think>\n\n</think>\n\n'));
 });

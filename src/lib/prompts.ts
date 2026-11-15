@@ -233,3 +233,17 @@ export function partialReply(raw: string): { text: string; complete: boolean } |
   }
   return { text, complete: m[2] === '"' };
 }
+
+/**
+ * Builds the Qwen chat prompt by hand. Letting the model's own template decide caused thinking
+ * blocks on the phone; this prompt ends with an already-closed empty thinking block (Qwen's
+ * "no thinking" form), and the JSON grammar then applies from the very first token.
+ */
+export const CHAT_STOP = ['<|im_end|>', '<|endoftext|>', '<|im_start|>'];
+
+export function buildChatPrompt(system: string, messages: { role: 'user' | 'assistant'; content: string }[]): string {
+  const parts = [`<|im_start|>system\n${system}<|im_end|>`];
+  for (const m of messages) parts.push(`<|im_start|>${m.role}\n${m.content}<|im_end|>`);
+  parts.push('<|im_start|>assistant\n<think>\n\n</think>\n\n');
+  return parts.join('\n');
+}
