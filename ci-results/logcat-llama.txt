@@ -1,8 +1,17 @@
-11-15 16:36:33.737  8236  8259 D RNLlama : Using /data/user/0/com.yaufan.englishpractice/app_rnllama-htp for HTP libraries
-11-15 16:36:33.740  8236  8259 D RNLlama : Extracted HTP library: libggml-htp-v73.so
-11-15 16:36:33.744  8236  8259 D RNLlama : Extracted HTP library: libggml-htp-v75.so
-11-15 16:36:33.770  8236  8259 D RNLlama : Extracted HTP library: libggml-htp-v79.so
-11-15 16:36:33.781  8236  8259 D RNLlama : Extracted HTP library: libggml-htp-v81.so
-11-15 16:36:33.787  8236  8259 D RNLlama : Extracted HTP library: libggml-htp-v85.so
-11-15 16:36:33.789  8236  8259 D RNLlama : Set ADSP_LIBRARY_PATH=/data/user/0/com.yaufan.englishpractice/app_rnllama-htp
-11-15 16:36:33.889  8236  8342 I RNLlama : loadModel:591 Using n_parallel: 1 (enables up to 1 parallel slots)
+11-15 17:11:42.875  8554  8577 D RNLlama : Using /data/user/0/com.yaufan.englishpractice/app_rnllama-htp for HTP libraries
+11-15 17:11:42.880  8554  8577 D RNLlama : Extracted HTP library: libggml-htp-v73.so
+11-15 17:11:42.883  8554  8577 D RNLlama : Extracted HTP library: libggml-htp-v75.so
+11-15 17:11:42.886  8554  8577 D RNLlama : Extracted HTP library: libggml-htp-v79.so
+11-15 17:11:42.889  8554  8577 D RNLlama : Extracted HTP library: libggml-htp-v81.so
+11-15 17:11:42.895  8554  8577 D RNLlama : Extracted HTP library: libggml-htp-v85.so
+11-15 17:11:42.895  8554  8577 D RNLlama : Set ADSP_LIBRARY_PATH=/data/user/0/com.yaufan.englishpractice/app_rnllama-htp
+11-15 17:11:43.094  8554  8685 I RNLlama : loadModel:591 Using n_parallel: 1 (enables up to 1 parallel slots)
+11-15 17:11:46.513  8554  8685 I RNLlama : loadModel:660 Context initialized with n_seq_max = 1
+11-15 17:11:46.513  8554  8685 I RNLlama : loadModel:679 ctx_shift: disabled
+11-15 17:11:46.514  8554  8685 I RNLlama : attachThreadpoolsIfAvailable:552 Attached ggml threadpool (n_threads=2, n_threads_batch=2)
+11-15 17:11:46.572  8554  8685 I RNLlama : loadPrompt:487 
+11-15 17:11:46.572  8554  8685 I RNLlama : loadPrompt: prompt_tokens = 248045 8678 198 2523 513 264 11321 6163 24499 13 21134 303 799 2716 11316 13 248046 198 248045 846 198 44240 23066 310 264 47308 6163 60838 494 27371 13 248046 198 248045 74455 198 248068 271 248069 271 
+11-15 17:11:46.572  8554  8685 I RNLlama : probeStateCache:186 prompt state cache enabled (recurrent/hybrid model)
+11-15 17:12:16.950  8554  8685 I RNLlama : loadPrompt:487 
+11-15 17:12:16.950  8554  8685 I RNLlama : loadPrompt: prompt_tokens = 248045 8678 198 2523 513 449 6163 11750 8005 364 264 89737 6474 440 7234 6163 13 198 2523 513 264 11321 3498 8814 506 264 10482 7808 13 561 60838 369 264 5813 13 198 14951 25 357 12655 10482 7808 303 279 6353 13 198 38663 25 561 5813 9861 264 6808 318 2073 11 3882 466 220 7332 11 364 1532 466 310 708 8 321 20589 13 198 36842 303 3542 321 3166 8574 279 5614 13 19276 1092 279 60838 2582 3125 488 13 271 4303 25 25858 10191 357 17 13 5272 4047 17248 4105 13 8618 11316 506 1379 220 16 17 4105 13 198 8671 25 198 12 328 20390 763 20283 1727 1500 13 220 16 466 220 17 2716 20699 22157 11 13004 440 799 4145 3296 13 2233 95637 13 198 12 328 20390 6214 71 763 43943 8193 318 75322 16068 8 14053 314 678 9559 13 198 12 328 5816 29377 763 1353 25835 506 279 60838 579 1483 1876 13 1368 424 682 264 30394 16036 11 264 7167 3299 11 466 369 5158 303 8193 11 2113 279 60838 579 1765 1876 8097 1083 328 55221 1 318 23310 7063 11 5629 6163 681 1141 8193 7063 303 328 55221 6214 71 487 321 26
+11-15 17:12:16.950  8554  8685 W RNLlama : loadPrompt:570 no usable state checkpoint (recurrent/hybrid/SWA model), doing full cache clear

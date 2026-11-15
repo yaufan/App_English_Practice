@@ -1,47 +1,9 @@
-6:11-15 16:34:53.598   519   894 W ActivityTaskManager: Force removing ActivityRecord{272c6e8 u0 com.yaufan.englishpractice/.MainActivity t12 f}}: app died, no saved state
-440:11-15 16:34:55.400  8236  8258 I ReactNativeJS: Running "main"
-5060:11-15 16:36:36.731  8351  8351 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-5061:11-15 16:36:36.752  8351  8351 I AndroidRuntime: Using default boot image
-5062:11-15 16:36:36.752  8351  8351 I AndroidRuntime: Leaving lock profiling enabled
-5079:11-15 16:36:37.133  8351  8351 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-5085:11-15 16:36:37.195  8351  8351 D AndroidRuntime: Shutting down VM
-5087:11-15 16:36:37.198  8351  8351 E AndroidRuntime: FATAL EXCEPTION: main
-5088:11-15 16:36:37.198  8351  8351 E AndroidRuntime: PID: 8351
-5089:11-15 16:36:37.198  8351  8351 E AndroidRuntime: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@cc76fe8already registered!
-5090:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3065)
-5091:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3041)
-5092:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3024)
-5093:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:2966)
-5094:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub$Proxy.registerUiTestAutomationService(IAccessibilityManager.java:998)
-5095:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.app.UiAutomationConnection.registerUiTestAutomationServiceLocked(UiAutomationConnection.java:576)
-5096:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.app.UiAutomationConnection.connect(UiAutomationConnection.java:121)
-5097:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:381)
-5098:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:326)
-5099:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:31)
-5100:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
-5101:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
-5102:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
-5103:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:359)
-5104:11-15 16:36:37.198  8351  8351 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
-5105:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.server.accessibility.UiAutomationManager.registerUiTestAutomationServiceLocked(UiAutomationManager.java:103)
-5106:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at com.android.server.accessibility.AccessibilityManagerService.registerUiTestAutomationService(AccessibilityManagerService.java:1422)
-5107:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.view.accessibility.IAccessibilityManager$Stub.onTransact(IAccessibilityManager.java:501)
-5108:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1339)
-5109:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 	at android.os.Binder.execTransact(Binder.java:1275)
-5110:11-15 16:36:37.198  8351  8351 E AndroidRuntime: 
-5112:11-15 16:36:37.201  8351  8351 E AndroidRuntime: Error reporting crash
-5113:11-15 16:36:37.201  8351  8351 E AndroidRuntime: java.lang.RuntimeException: Bad file descriptor
-5114:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.os.BinderProxy.transactNative(Native Method)
-5115:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.os.BinderProxy.transact(BinderProxy.java:584)
-5116:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.os.IServiceManager$Stub$Proxy.checkService(IServiceManager.java:443)
-5117:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.os.ServiceManagerProxy.getService(ServiceManagerNative.java:63)
-5118:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.os.ServiceManager.rawGetService(ServiceManager.java:378)
-5119:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.os.ServiceManager.getService(ServiceManager.java:147)
-5120:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.app.ActivityManager$3.create(ActivityManager.java:5214)
-5121:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.app.ActivityManager$3.create(ActivityManager.java:5211)
-5122:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.util.Singleton.get(Singleton.java:43)
-5123:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at android.app.ActivityManager.getService(ActivityManager.java:5202)
-5124:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException(RuntimeInit.java:160)
-5125:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1071)
-5126:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1066)
-5127:11-15 16:36:37.201  8351  8351 E AndroidRuntime: 	at java.lang.Thread.dispatchUncaughtException(Thread.java:2306)
+7:11-15 17:08:49.005   518  1859 W ActivityTaskManager: Force removing ActivityRecord{4725ad9 u0 com.yaufan.englishpractice/.MainActivity t12 f}}: app died, no saved state
+380:11-15 17:08:50.594  8554  8576 I ReactNativeJS: Running "main"
+19761:11-15 17:15:09.109  8554  8576 W ReactNativeJS: '[turn] unusable model output:', '<|im_start|>assistant\n<think>\nThe user\'s input is "i want latte big".\n- Last message: "i want latte big" (no grammar mistake, no Chinese characters).\n- Corrected version: "I want a big latte."\n- Chinese translation of corrected: 我想要一杯大拿鐵。\n- Reason for correction: Missing \'a\'; said "big latte" is fine.\n\nNow I need to respond as a barista.\nI should ask about size (large or small) and delivery (here or go).\nI can also offer some common options like hot/iced, but since the user just said "big", I should clarify size and then ask if they want hot or iced.\nOr I can assume "big" means large cup and j'
+27009:11-15 17:17:19.650  8400  8400 I AndroidRuntime: VM exiting with result code 0.
+27412:11-15 17:17:21.316  8871  8871 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+27413:11-15 17:17:21.322  8871  8871 I AndroidRuntime: Using default boot image
+27414:11-15 17:17:21.322  8871  8871 I AndroidRuntime: Leaving lock profiling enabled
+27428:11-15 17:17:21.623  8871  8871 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+27500:11-15 17:17:22.677  8871  8871 D AndroidRuntime: Shutting down VM
