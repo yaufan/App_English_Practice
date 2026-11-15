@@ -27,4 +27,4 @@ Fan 自己用的英文練習 App：口說對話、單字片語、聽力。Expo S
 - push 到 main（或在 Actions 手動執行 Android APK）→ 打包 → 建立 GitHub Release。
 - 下載網址固定：`https://github.com/yaufan/app_english_practice/releases/latest/download/english-practice.apk`，QR code 也在 Release 頁。
 - versionCode 用 workflow 的 run number，所以新版可以直接蓋過舊版安裝；使用者看得到的版本號改 `app.json` 的 `version`。
-- 沒設定簽章 Secrets 時用專案固定的 debug key 簽章（個人安裝夠用）。若之後加上 `ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`，第一次要先移除舊版再安裝。
+- 簽章：repo 有 keystore Secret（`ANDROID_KEYSTORE_BASE64` 等常見名稱）就用它，密碼 Secret 必須有；alias 沒設會自動從 keystore 讀，key 密碼沒設就用 keystore 密碼。完全沒有 keystore Secret 時用專案固定的 debug key。兩種簽章互換時要先移除舊版再安裝。
