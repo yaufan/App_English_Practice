@@ -1,8 +1,8 @@
-5:11-15 12:42:36.532   521  2077 W ActivityTaskManager: Force removing ActivityRecord{59dacf6 u0 com.yaufan.englishpractice/.MainActivity t11 f}}: app died, no saved state
-377:11-15 12:42:38.015  7795  7819 I ReactNativeJS: Running "main"
-3835:11-15 12:43:09.697  7651  7651 I AndroidRuntime: VM exiting with result code 0.
-4201:11-15 12:43:10.591  7996  7996 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
-4202:11-15 12:43:10.594  7996  7996 I AndroidRuntime: Using default boot image
-4203:11-15 12:43:10.594  7996  7996 I AndroidRuntime: Leaving lock profiling enabled
-4218:11-15 12:43:10.667  7996  7996 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
-4323:11-15 12:43:11.750  7996  7996 D AndroidRuntime: Shutting down VM
+633:11-15 13:32:37.114   517  2263 W ActivityTaskManager: Force removing ActivityRecord{5321be0 u0 com.yaufan.englishpractice/.MainActivity t11 f}}: app died, no saved state
+1356:11-15 13:32:39.013  7506  7534 I ReactNativeJS: Running "main"
+5314:11-15 13:33:38.757  7310  7310 I AndroidRuntime: VM exiting with result code 0.
+5695:11-15 13:33:40.153  7714  7714 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+5697:11-15 13:33:40.159  7714  7714 I AndroidRuntime: Using default boot image
+5698:11-15 13:33:40.159  7714  7714 I AndroidRuntime: Leaving lock profiling enabled
+5715:11-15 13:33:40.343  7714  7714 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+5779:11-15 13:33:41.437  7714  7714 D AndroidRuntime: Shutting down VM

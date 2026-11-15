@@ -1,33 +1,17 @@
 Running on test
  > Flow 04_listening
 Launch app "com.yaufan.englishpractice"... COMPLETED
-Assert that "今日對話" is visible... COMPLETED
-Tap on id: tab-listen... COMPLETED
-Tap on "早上的咖啡店"... COMPLETED
-Assert that "播放全文" is visible... COMPLETED
-Tap on "顯示英文"... COMPLETED
-Tap on "顯示中文"... COMPLETED
-Take screenshot 04a_listen... COMPLETED
-Tap on "播放全文"... COMPLETED
-Take screenshot 04b_playing... COMPLETED
-Tap on "聽寫"... COMPLETED
-Assert that "第 1 / 6 句" is visible... COMPLETED
-Tap on id: dict-input... COMPLETED
-Input text Every morning Lisa stops at a cafe near her office... COMPLETED
-Hide Keyboard... COMPLETED
-Tap on "對答案"... COMPLETED
-Assert that "下一句" is visible... COMPLETED
-Take screenshot 04c_dictation... COMPLETED
-Tap on "題目"... COMPLETED
-Tap on "A medium hot latte"... COMPLETED
-Scrolling DOWN until "The café is very busy." is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
-Tap on "The café is very busy."... COMPLETED
-Scrolling DOWN until "By card" is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
-Tap on "By card"... COMPLETED
-Scrolling DOWN until "答對 3 / 3 題.*" is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
-Take screenshot 04d_quiz... COMPLETED
-Press back... COMPLETED
-Tap on "請 AI 產生新短文"... COMPLETED
-Assert that "產生短文" is visible... COMPLETED
-Take screenshot 04e_generate... COMPLETED
-Press back... COMPLETED
+Assert that "今日對話" is visible... FAILED
+
+Assertion is false: "今日對話" is visible
+
+Assertion '"今日對話" is visible' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.
+
+Possible causes:
+- Element selector may be incorrect - check if there are similar elements with slightly different names/properties.
+- Element may be temporarily unavailable due to loading state
+- This could be a real regression that needs to be addressed
+
+==== Debug output (logs & screenshots) ====
+
+/home/runner/.maestro/tests/2026-11-15_133117

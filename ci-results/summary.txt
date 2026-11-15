@@ -1,7 +1,7 @@
 install exit=0
-01_tabs exit=0
-02_conversation exit=0
-03_words exit=0
-04_listening exit=0
+01_tabs exit=1
+02_conversation exit=1
+03_words exit=1
+04_listening exit=1
 05_settings exit=1
 06_ai skipped (no API key secret)
