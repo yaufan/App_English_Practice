@@ -3,6 +3,7 @@
 # Results (screenshots, logs, crash lines) go to ci-results/.
 set -u
 OUT=ci-results
+rm -rf "$OUT"  # the branch checkout carries results from the previous run
 mkdir -p "$OUT/shots"
 APK=android/app/build/outputs/apk/release/app-release.apk
 

@@ -32,12 +32,12 @@ jobs:
           node-version: 22
       - name: Check AI replies with the app's prompts
         run: |
-          mkdir -p ci-results
+          rm -rf ci-results && mkdir -p ci-results
           node --experimental-strip-types --no-warnings ci/prompt-eval.ts | tee ci-results/prompt-eval.md
       - uses: actions/upload-artifact@v4
         with:
           name: prompt-results
-          path: ci-results/
+          path: ci-results/prompt-eval.md
 
   emulator:
     runs-on: ubuntu-latest
