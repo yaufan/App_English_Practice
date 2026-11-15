@@ -8,7 +8,7 @@ Tap on (Optional) "Wait"... WARNED
 Assert that "今日對話" is visible... COMPLETED
 Tap on id: tab-settings... COMPLETED
 Assert that "離線 AI 模型" is visible... COMPLETED
-Tap on id: model-qwen3.5-0.8b... COMPLETED
+Tap on id: model-qwen3.5-4b... COMPLETED
 Take screenshot 05a_model_section... COMPLETED
 Tap on id: model-qwen3.5-2b... COMPLETED
 Scrolling DOWN until "稍慢" is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED

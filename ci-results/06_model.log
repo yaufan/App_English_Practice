@@ -36,11 +36,20 @@ Tap on id: hint-btn... COMPLETED
 Take screenshot 06g_hint... COMPLETED
 Tap on id: hint-btn... COMPLETED
 Tap on id: finish-btn... COMPLETED
-Assert that "整體回饋" is visible... FAILED
+Assert that "整體回饋" is visible... COMPLETED
+Take screenshot 06h_summary... COMPLETED
+Press back... COMPLETED
+Tap on id: tab-listen... COMPLETED
+Tap on "請 AI 產生新短文"... COMPLETED
+Tap on "AI 工作"... COMPLETED
+Tap on "介紹語音辨識系統"... COMPLETED
+Tap on "產生短文"... COMPLETED
+Take screenshot 06i_generating... COMPLETED
+Assert that "播放全文" is visible... FAILED
 
-Assertion is false: "整體回饋" is visible
+Assertion is false: "播放全文" is visible
 
-Assertion '"整體回饋" is visible' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.
+Assertion '"播放全文" is visible' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.
 
 Possible causes:
 - Element selector may be incorrect - check if there are similar elements with slightly different names/properties.
@@ -49,4 +58,4 @@ Possible causes:
 
 ==== Debug output (logs & screenshots) ====
 
-/home/runner/.maestro/tests/2026-11-15_145858
+/home/runner/.maestro/tests/2026-11-15_154929
