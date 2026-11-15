@@ -15,7 +15,8 @@ Fan 自己用的英文練習 App：口說對話、單字片語、聽力。Expo S
 - 模型：Qwen3.5 2B（標準，約 1.2 GB，預設）和 4B（高品質，約 2.6 GB，較新的手機），都是 Q4_K_M GGUF。0.8B 測過品質太差（會教錯英文），不要再加回來。
 - `src/lib/schemas.ts`：給模型的 JSON schema，llama.cpp 會轉成文法強制輸出合法 JSON；`reply` 必須排第一個欄位，App 才能邊產生邊顯示、先唸出來。
 - `src/lib/zh.ts`：小模型常冒出簡體字，模型輸出的中文一律用 OpenCC 轉成台灣繁體。
-- `src/lib/prompts.ts`：給模型的指令（為小模型寫得短、附一個範例）和解析（解析失敗要能優雅退回）。
+- `src/lib/prompts.ts`：給模型的指令（為小模型寫得短、附一個範例）、解析與防呆（混中文的英文、無效修正、英文寫的中文欄位都不顯示）。
+- 對話提示是自己用 `buildChatPrompt` 組的 Qwen 格式，結尾是空的思考區塊；不要改回交給 llama.rn 的 messages／範本處理，手機上會變成長篇思考、JSON 格式也不會從第一個字生效（模擬器實測過）。
 - `src/lib/srs.ts`：間隔複習排程；`src/lib/match.ts`：比對說出／打出的英文。
 - `src/lib/useRecognizer.ts`：語音辨識（expo-speech-recognition），`src/lib/tts.ts`：朗讀（expo-speech）。
 

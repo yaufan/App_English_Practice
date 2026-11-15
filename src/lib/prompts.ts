@@ -111,7 +111,8 @@ function asCorrection(v: unknown): Correction | null {
   const o = v as Record<string, unknown>;
   const better = str(o.better);
   if (!better) return null;
-  return { you_said: str(o.you_said), better, better_zh: cleanZh(str(o.better_zh)), why_zh: cleanZh(str(o.why_zh)) };
+  const zh = (v: string) => (CJK.test(v) ? cleanZh(v) : '');
+  return { you_said: str(o.you_said), better, better_zh: zh(str(o.better_zh)), why_zh: zh(str(o.why_zh)) };
 }
 
 /** Drops stray JSON punctuation a small model sometimes leaves at the end of a Chinese string, e.g. 「…？」},」. */
@@ -166,19 +167,25 @@ export function parseTurn(text: string): TurnReply {
 export function parseSummary(text: string): Summary {
   const o = extractJson(text) as Record<string, unknown>;
   const arr = (v: unknown) => (Array.isArray(v) ? v : []);
+  // the 2B model sometimes writes these in English; a weak learner needs them in Chinese, so drop English ones
+  const zhOnly = (v: string) => (hasChinese(v) ? v : '');
+  const overall = zhOnly(cleanZh(str(o.整體評語) || str(o.overall_zh)));
   return {
-    overall_zh: cleanZh(str(o.整體評語) || str(o.overall_zh)),
-    good_zh: arr(o.做得好的地方 ?? o.good_zh).map((x) => cleanZh(str(x))).filter(Boolean),
+    overall_zh: overall || '這次的回饋整理如下，可以先看「可以說得更好」。',
+    good_zh: arr(o.做得好的地方 ?? o.good_zh)
+      .map((x) => zhOnly(cleanZh(str(x))))
+      .filter(Boolean),
     corrections: arr(o.corrections)
       .map((c) => {
         const r = (c ?? {}) as Record<string, unknown>;
-        return usableCorrection(asCorrection({ ...r, better_zh: r.中文意思 ?? r.better_zh, why_zh: r.原因 ?? r.why_zh }));
+        const c2 = usableCorrection(asCorrection({ ...r, better_zh: r.中文意思 ?? r.better_zh, why_zh: r.原因 ?? r.why_zh }));
+        return c2 ? { ...c2, better_zh: zhOnly(c2.better_zh), why_zh: zhOnly(c2.why_zh) } : null;
       })
       .filter((x): x is Correction => !!x),
     phrases: arr(o.phrases)
       .map((p) => englishPair(asPair(p)))
       .filter((x): x is Pair => !!x),
-    next_zh: cleanZh(str(o.下次試試) || str(o.next_zh)),
+    next_zh: zhOnly(cleanZh(str(o.下次試試) || str(o.next_zh))),
   };
 }
 

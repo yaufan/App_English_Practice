@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schedule, buildQueue, previewInterval, newCard, countDue } from '../src/lib/srs.ts';
 import { similarity, isCloseEnough, diffWords, normalize } from '../src/lib/match.ts';
-import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem, cleanZh, buildChatPrompt } from '../src/lib/prompts.ts';
+import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem, cleanZh, buildChatPrompt, hasChinese } from '../src/lib/prompts.ts';
 import { toTaiwan } from '../src/lib/zh.ts';
 import { TURN_SCHEMA, SUMMARY_SCHEMA, PASSAGE_SCHEMA } from '../src/lib/schemas.ts';
 import { DECKS } from '../src/data/decks.ts';
@@ -208,4 +208,13 @@ test('offline model: prompt ends with a closed empty thinking block', () => {
   assert.ok(p.startsWith('<|im_start|>system\nSYS<|im_end|>'));
   assert.ok(p.includes('<|im_start|>user\nok<|im_end|>'));
   assert.ok(p.endsWith('<|im_start|>assistant\n<think>\n\n</think>\n\n'));
+});
+
+test('guards: English text in Chinese review fields is not shown', () => {
+  const s = parseSummary(JSON.stringify({ 整體評語: 'You made a good start.', 做得好的地方: ['You said iced clearly', '敢開口'], corrections: [{ you_said: 'i like run', better: 'I like running.', 中文意思: '我喜歡跑步。', 原因: 'Use -ing after like' }], phrases: [], 下次試試: 'Try again' }));
+  assert.ok(hasChinese(s.overall_zh));
+  assert.deepEqual(s.good_zh, ['敢開口']);
+  assert.equal(s.corrections[0].why_zh, '');
+  assert.equal(s.corrections[0].better_zh, '我喜歡跑步。');
+  assert.equal(s.next_zh, '');
 });
