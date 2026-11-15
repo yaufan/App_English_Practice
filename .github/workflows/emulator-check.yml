@@ -1,0 +1,118 @@
+name: Emulator check
+
+# Test-only workflow: runs on the ci/emulator-test branch, never touches main or Releases.
+# Builds an x86_64 APK, walks every screen on an Android emulator with Maestro,
+# checks real AI replies when an API key secret exists, and commits the results back to the branch.
+on:
+  push:
+    branches: ['ci/emulator-test']
+    paths-ignore: ['ci-results/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: emulator-check
+  cancel-in-progress: true
+
+env:
+  EXPO_NO_TELEMETRY: 1
+
+jobs:
+  prompts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      API_KEY: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY || secrets.ANTHROPIC_KEY || secrets.CLAUDE_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Check AI replies with the app's prompts
+        run: |
+          mkdir -p ci-results
+          node --experimental-strip-types --no-warnings ci/prompt-eval.ts | tee ci-results/prompt-eval.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prompt-results
+          path: ci-results/
+
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    env:
+      API_KEY: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY || secrets.ANTHROPIC_KEY || secrets.CLAUDE_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - run: npm ci
+
+      - run: npx expo prebuild --platform android --clean --no-install
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build x86_64 APK for the emulator
+        run: cd android && ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=x86_64
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash ci/emulator-check.sh
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-results
+          path: ci-results/
+
+  publish:
+    needs: [prompts, emulator]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Commit results to the test branch
+        run: |
+          rm -rf ci-results && mkdir -p ci-results
+          cp -r artifacts/emulator-results/. ci-results/ 2>/dev/null || true
+          cp -r artifacts/prompt-results/. ci-results/ 2>/dev/null || true
+          echo "run: ${{ github.run_id }}  prompts=${{ needs.prompts.result }}  emulator=${{ needs.emulator.result }}" > ci-results/RUN.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ci-results
+          git commit -m "ci: emulator check results (${{ github.run_id }})" || echo "nothing to commit"
+          git push origin HEAD:${{ github.ref_name }}

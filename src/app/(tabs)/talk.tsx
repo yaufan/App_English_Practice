@@ -23,6 +23,7 @@ export default function Talk() {
         <Text style={s.freeSub}>輸入想聊的主題，中文也可以</Text>
         <View style={s.freeRow}>
           <TextInput
+            testID="topic-input"
             value={topic}
             onChangeText={setTopic}
             placeholder="例如：週末去哪裡玩、最近看的電影"

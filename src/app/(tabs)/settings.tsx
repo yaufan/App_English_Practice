@@ -86,6 +86,7 @@ export default function SettingsScreen() {
           <Text style={s.help}>對話檢討、AI 對話和產生聽力短文需要金鑰。金鑰只存在這支手機裡。</Text>
         )}
         <TextInput
+          testID="key-input"
           value={keyInput}
           onChangeText={setKeyInput}
           placeholder={apiKey ? '貼上新的金鑰以更換' : 'sk-ant-…'}

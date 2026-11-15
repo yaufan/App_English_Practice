@@ -1,0 +1,40 @@
+appId: com.yaufan.englishpractice
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "今日對話"
+    timeout: 60000
+- tapOn:
+    id: "tab-words"
+- tapOn: "翻卡"
+- assertVisible: "看答案"
+- takeScreenshot: 03a_flip_front
+- tapOn: "看答案"
+- assertVisible: "你記得多少？"
+- takeScreenshot: 03b_flip_back
+- tapOn: "記得"
+- tapOn: "看答案"
+- tapOn: "忘了"
+- tapOn: "看答案"
+- tapOn: "模糊"
+- takeScreenshot: 03c_after_rating
+- back
+- tapOn: "開口說"
+- assertVisible: "用英文說："
+- takeScreenshot: 03d_speak_front
+- tapOn:
+    id: "mic"
+- takeScreenshot: 03e_mic_pressed
+- extendedWaitUntil:
+    notVisible: "正在聽…"
+    timeout: 30000
+- takeScreenshot: 03f_mic_result
+- tapOn: "想不起來，看答案"
+- assertVisible: "你記得多少？"
+- takeScreenshot: 03g_speak_answer
+- tapOn: "記得"
+- back
+- tapOn: "列表"
+- assertVisible: "搜尋英文或中文"
+- takeScreenshot: 03h_deck_list
+- back

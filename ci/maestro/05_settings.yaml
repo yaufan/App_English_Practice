@@ -1,0 +1,22 @@
+appId: com.yaufan.englishpractice
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "今日對話"
+    timeout: 60000
+- tapOn:
+    id: "tab-settings"
+- tapOn:
+    id: "key-input"
+- inputText: "sk-ant-invalid-test-key"
+- hideKeyboard
+- tapOn: "儲存並測試"
+- extendedWaitUntil:
+    visible: "API 金鑰無效.*"
+    timeout: 40000
+- takeScreenshot: 05a_bad_key
+- tapOn: "稍慢"
+- scrollUntilVisible:
+    element: "清除學習紀錄"
+    direction: DOWN
+- takeScreenshot: 05b_settings_bottom

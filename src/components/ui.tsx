@@ -49,7 +49,9 @@ export function Btn({
   disabled,
   loading,
   style,
+  testID,
 }: {
+  testID?: string;
   title: string;
   onPress: () => void;
   icon?: string;
@@ -69,6 +71,8 @@ export function Btn({
   const p = palette[variant];
   return (
     <Pressable
+      testID={testID}
+      accessibilityRole="button"
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [
@@ -104,6 +108,8 @@ export function SpeakBtn({ text, size = 34, slow }: { text: string; size?: numbe
   const [on, setOn] = useState(false);
   return (
     <Pressable
+      testID={slow ? 'speak-slow' : 'speak'}
+      accessibilityLabel={slow ? '慢速朗讀' : '朗讀'}
       hitSlop={8}
       onPress={() => {
         if (on) {
@@ -145,6 +151,8 @@ export function MicBtn({ listening, onPress, size = 72 }: { listening: boolean; 
         />
       )}
       <Pressable
+        testID="mic"
+        accessibilityLabel={listening ? '停止錄音' : '麥克風'}
         onPress={onPress}
         style={({ pressed }) => [
           { width: size, height: size, borderRadius: size / 2, backgroundColor: listening ? C.mic : C.primary },

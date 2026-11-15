@@ -1,0 +1,43 @@
+appId: com.yaufan.englishpractice
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "今日對話"
+    timeout: 60000
+- tapOn:
+    id: "tab-listen"
+- tapOn: "早上的咖啡店"
+- assertVisible: "播放全文"
+- tapOn: "顯示英文"
+- tapOn: "顯示中文"
+- takeScreenshot: 04a_listen
+- tapOn: "播放全文"
+- takeScreenshot: 04b_playing
+- tapOn: "聽寫"
+- assertVisible: "第 1 / 6 句"
+- tapOn:
+    id: "dict-input"
+- inputText: "Every morning Lisa stops at a cafe near her office"
+- hideKeyboard
+- tapOn: "對答案"
+- assertVisible: "下一句"
+- takeScreenshot: 04c_dictation
+- tapOn: "題目"
+- tapOn: "A medium hot latte"
+- scrollUntilVisible:
+    element: "The café is very busy."
+    direction: DOWN
+- tapOn: "The café is very busy."
+- scrollUntilVisible:
+    element: "By card"
+    direction: DOWN
+- tapOn: "By card"
+- scrollUntilVisible:
+    element: "答對 3 / 3 題.*"
+    direction: DOWN
+- takeScreenshot: 04d_quiz
+- back
+- tapOn: "請 AI 產生新短文"
+- assertVisible: "產生短文"
+- takeScreenshot: 04e_generate
+- back

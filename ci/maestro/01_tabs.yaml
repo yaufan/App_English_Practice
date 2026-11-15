@@ -1,0 +1,25 @@
+appId: com.yaufan.englishpractice
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "今日對話"
+    timeout: 90000
+- waitForAnimationToEnd
+- takeScreenshot: 01a_today
+- tapOn:
+    id: "tab-talk"
+- assertVisible: "口說對話"
+- takeScreenshot: 01b_talk
+- tapOn:
+    id: "tab-words"
+- assertVisible: "單字片語"
+- takeScreenshot: 01c_words
+- tapOn:
+    id: "tab-listen"
+- assertVisible: "請 AI 產生新短文"
+- takeScreenshot: 01d_listen
+- tapOn:
+    id: "tab-settings"
+- assertVisible: "Claude API 金鑰"
+- takeScreenshot: 01e_settings

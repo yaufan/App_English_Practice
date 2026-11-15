@@ -1,0 +1,30 @@
+appId: com.yaufan.englishpractice
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "今日對話"
+    timeout: 60000
+- tapOn:
+    id: "tab-talk"
+- tapOn: "咖啡店點餐"
+- assertVisible: "先熟悉這幾句"
+- tapOn:
+    id: "speak"
+- assertVisible: "開始對話"
+- takeScreenshot: 02a_cafe_intro
+- back
+- tapOn:
+    id: "topic-input"
+- inputText: "weekend plans"
+- hideKeyboard
+- tapOn: "開始"
+- assertVisible: "自由聊天：weekend plans"
+- takeScreenshot: 02b_free_intro
+- back
+- scrollUntilVisible:
+    element: "雅思口說 Part 1"
+    direction: DOWN
+- tapOn: "雅思口說 Part 1"
+- assertVisible: "先熟悉這幾句"
+- takeScreenshot: 02c_ielts_intro
+- back

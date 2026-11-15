@@ -246,6 +246,7 @@ function Dictation({ sentences, rate, voice }: { sentences: { en: string; zh: st
           <Btn small variant="ghost" icon="hourglass-half" title="很慢" onPress={() => speak(cur.en, { rate: 0.5, voice })} />
         </View>
         <TextInput
+          testID="dict-input"
           value={typed}
           onChangeText={setTyped}
           editable={!result}

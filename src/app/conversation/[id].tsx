@@ -211,7 +211,7 @@ export default function Conversation() {
         headerRight:
           phase === 'chat'
             ? () => (
-                <Pressable onPress={finish} hitSlop={10} style={s.headerBtn}>
+                <Pressable testID="finish-btn" onPress={finish} hitSlop={10} style={s.headerBtn}>
                   <Text style={s.headerBtnText}>結束並檢討</Text>
                 </Pressable>
               )
@@ -459,6 +459,7 @@ export default function Conversation() {
       <View style={[s.composer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
         {rec.error ? <Text style={s.recErr}>{rec.error}</Text> : null}
         <TextInput
+          testID="chat-input"
           value={rec.listening ? (draft ? `${draft} ${rec.interim}` : rec.interim) : draft}
           onChangeText={setDraft}
           editable={!rec.listening}
@@ -468,12 +469,13 @@ export default function Conversation() {
           style={[s.input, rec.listening && { borderColor: C.mic }]}
         />
         <View style={s.controls}>
-          <Pressable onPress={() => setHintOpen((h) => !h)} style={[s.sideBtn, hintOpen && { backgroundColor: C.warnSoft }]}>
+          <Pressable testID="hint-btn" onPress={() => setHintOpen((h) => !h)} style={[s.sideBtn, hintOpen && { backgroundColor: C.warnSoft }]}>
             <Icon name="lightbulb-o" size={20} color={C.warn} />
             <Text style={s.sideText}>提示</Text>
           </Pressable>
           <MicBtn listening={rec.listening} onPress={rec.toggle} size={64} />
           <Pressable
+            testID="send-btn"
             onPress={send}
             disabled={!draft.trim() || busy || rec.listening}
             style={[s.sideBtn, (!draft.trim() || busy || rec.listening) && { opacity: 0.4 }]}
