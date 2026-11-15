@@ -1,6 +1,9 @@
 appId: com.yaufan.englishpractice
 ---
 - launchApp
+- tapOn:
+    text: "Wait"
+    optional: true
 - extendedWaitUntil:
     visible: "今日對話"
     timeout: 60000

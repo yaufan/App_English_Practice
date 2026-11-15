@@ -2,6 +2,9 @@ appId: com.yaufan.englishpractice
 ---
 # Runs only when an API key secret exists. Never screenshot the settings page after the key is saved.
 - launchApp
+- tapOn:
+    text: "Wait"
+    optional: true
 - extendedWaitUntil:
     visible: "今日對話"
     timeout: 60000

@@ -9,6 +9,8 @@ APK=android/app/build/outputs/apk/release/app-release.apk
 
 adb install -r "$APK" > "$OUT/install.txt" 2>&1
 echo "install exit=$?" >> "$OUT/summary.txt"
+# The CI emulator is slow and the system launcher sometimes shows "isn't responding" over the app.
+adb shell settings put global hide_error_dialogs 1 > /dev/null 2>&1
 adb logcat -G 16M > /dev/null 2>&1
 adb logcat -c
 touch "$OUT/.start"
@@ -16,6 +18,7 @@ touch "$OUT/.start"
 run_flow() {
   local name=$1; shift
   echo "=== $name"
+  adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null 2>&1
   maestro test "$@" "ci/maestro/$name.yaml" > "$OUT/$name.log" 2>&1
   local code=$?
   echo "$name exit=$code" | tee -a "$OUT/summary.txt"
