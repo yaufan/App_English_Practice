@@ -220,6 +220,10 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
     const res = await c.completion(
       {
         messages: [{ role: 'system', content: opts.system }, ...opts.messages],
+        // llama.rn leaves this unset by default; without it the model writes its own
+        // "<|im_start|>assistant" header and starts thinking instead of answering
+        jinja: true,
+        add_generation_prompt: true,
         response_format: opts.schema ? { type: 'json_schema', json_schema: { strict: true, schema: opts.schema } } : undefined,
         // Qwen3.5 thinks out loud by default; turn it off both ways the template understands,
         // and split off any reasoning that still slips through so it never reaches the screen.
@@ -238,7 +242,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
         opts.onText(acc);
       },
     );
-    const text = toTaiwan(res.content || res.text || acc);
+    const text = toTaiwan(stripChatNoise(res.content || res.text || acc));
     const tps = res.timings?.predicted_per_second ?? 0;
     if (!text.trim()) throw new LlmError('模型沒有產生內容，請再試一次。');
     return { text, tokensPerSecond: Math.round(tps * 10) / 10, ms: Date.now() - t0 };
@@ -248,6 +252,16 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
   } finally {
     busy = false;
   }
+}
+
+/** Removes chat-template tokens and any thinking block that slipped into the output. */
+export function stripChatNoise(raw: string): string {
+  return raw
+    .replace(/<\|im_start\|>\s*assistant\s*/g, '')
+    .replace(/<\|im_end\|>/g, '')
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/^[\s\S]*<\/think>/, '')
+    .trim();
 }
 
 export async function stopGenerating(): Promise<void> {
