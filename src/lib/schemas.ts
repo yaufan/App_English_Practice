@@ -39,16 +39,40 @@ export const TURN_SCHEMA = {
   additionalProperties: false,
 };
 
+// Chinese key names make a small model answer these fields in Chinese (English keys like
+// "overall_zh" were sometimes answered in English on the phone). parseSummary maps them back.
+const summaryCorrection = {
+  type: 'object',
+  properties: {
+    you_said: str(160),
+    better: str(160),
+    中文意思: str(80),
+    原因: str(80),
+  },
+  required: ['you_said', 'better', '中文意思', '原因'],
+  additionalProperties: false,
+};
+
 export const SUMMARY_SCHEMA = {
   type: 'object',
   properties: {
-    overall_zh: str(160),
-    good_zh: { type: 'array', items: str(60), minItems: 1, maxItems: 3 },
-    corrections: { type: 'array', items: correction, maxItems: 4 },
-    phrases: { type: 'array', items: pair(100, 50), minItems: 3, maxItems: 5 },
-    next_zh: str(80),
+    整體評語: str(160),
+    做得好的地方: { type: 'array', items: str(60), minItems: 1, maxItems: 3 },
+    corrections: { type: 'array', items: summaryCorrection, maxItems: 4 },
+    phrases: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { english: str(100), chinese: str(50) },
+        required: ['english', 'chinese'],
+        additionalProperties: false,
+      },
+      minItems: 3,
+      maxItems: 5,
+    },
+    下次試試: str(80),
   },
-  required: ['overall_zh', 'good_zh', 'corrections', 'phrases', 'next_zh'],
+  required: ['整體評語', '做得好的地方', 'corrections', 'phrases', '下次試試'],
   additionalProperties: false,
 };
 

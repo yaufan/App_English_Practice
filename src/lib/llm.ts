@@ -35,7 +35,7 @@ export const MODELS: ModelSpec[] = [
     note: '約 2.6 GB，修正和檢討比較準，需要 8 GB 記憶體以上的較新手機，回覆比較慢',
     file: 'Qwen3.5-4B-Q4_K_M.gguf',
     url: 'https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf',
-    approxMB: 2600,
+    approxMB: 2614,
   },
 ];
 

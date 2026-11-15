@@ -69,12 +69,12 @@ export function summarySystem(level: Level): string {
   return `You are a kind English coach for a Taiwanese adult with weak English (${LEVEL_RULE[level]}).
 You get a practice conversation. Only lines starting with "Learner:" are the learner. Never correct "Partner:" lines.
 The learner's lines come from speech recognition, so ignore punctuation and capital letters.
-Write short, encouraging feedback in Traditional Chinese (Taiwan):
-- overall_zh: 2 sentences about how it went.
-- good_zh: 1 to 3 things the learner did well.
-- corrections: up to 4 learner lines that had real mistakes. "better" is that same line fixed, keeping the learner's meaning. Skip lines that were already fine.
-- phrases: 3 to 5 useful English sentences the learner could use in this situation, with Chinese.
-- next_zh: one thing to try next time.`;
+Write short, encouraging feedback. Every field with a Chinese name must be written in Traditional Chinese (Taiwan).
+- 整體評語: 2 sentences about how it went.
+- 做得好的地方: 1 to 3 things the learner did well.
+- corrections: up to 4 learner lines that had real mistakes. "better" is that same line fixed in English, keeping the learner's meaning; 中文意思 is its meaning; 原因 is a short reason. Skip lines that were already fine.
+- phrases: 3 to 5 useful English sentences for this situation ("english") with Chinese ("chinese").
+- 下次試試: one thing to try next time.`;
 }
 
 export function passageSystem(level: Level): string {
@@ -103,7 +103,7 @@ function asPair(v: unknown): Pair | null {
   const o = v as Record<string, unknown>;
   const en = str(o.en) || str(o.english);
   if (!en) return null;
-  return { en, zh: str(o.zh) || str(o.chinese) };
+  return { en, zh: cleanZh(str(o.zh) || str(o.chinese)) };
 }
 
 function asCorrection(v: unknown): Correction | null {
@@ -111,7 +111,12 @@ function asCorrection(v: unknown): Correction | null {
   const o = v as Record<string, unknown>;
   const better = str(o.better);
   if (!better) return null;
-  return { you_said: str(o.you_said), better, better_zh: str(o.better_zh), why_zh: str(o.why_zh) };
+  return { you_said: str(o.you_said), better, better_zh: cleanZh(str(o.better_zh)), why_zh: cleanZh(str(o.why_zh)) };
+}
+
+/** Drops stray JSON punctuation a small model sometimes leaves at the end of a Chinese string, e.g. 「…？」},」. */
+export function cleanZh(s: string): string {
+  return s.replace(/[\s"'}\]\[,，]+$/u, '').replace(/」+$/u, (m) => ((s.match(/「/g) ?? []).length >= m.length ? m : '')).trim();
 }
 
 // ── Guards: a small model sometimes writes Chinese where English belongs, or "corrects"
@@ -151,7 +156,7 @@ export function parseTurn(text: string): TurnReply {
   if (!reply) throw new Error('AI 沒有回覆內容');
   return {
     reply,
-    reply_zh: str(o.reply_zh),
+    reply_zh: cleanZh(str(o.reply_zh)),
     correction: usableCorrection(asCorrection(o.correction)),
     hint: englishPair(asPair(o.hint)) ?? { en: '', zh: '' },
     done: o.done === true,
@@ -162,15 +167,18 @@ export function parseSummary(text: string): Summary {
   const o = extractJson(text) as Record<string, unknown>;
   const arr = (v: unknown) => (Array.isArray(v) ? v : []);
   return {
-    overall_zh: str(o.overall_zh),
-    good_zh: arr(o.good_zh).map((x) => str(x)).filter(Boolean),
+    overall_zh: cleanZh(str(o.整體評語) || str(o.overall_zh)),
+    good_zh: arr(o.做得好的地方 ?? o.good_zh).map((x) => cleanZh(str(x))).filter(Boolean),
     corrections: arr(o.corrections)
-      .map((c) => usableCorrection(asCorrection(c)))
+      .map((c) => {
+        const r = (c ?? {}) as Record<string, unknown>;
+        return usableCorrection(asCorrection({ ...r, better_zh: r.中文意思 ?? r.better_zh, why_zh: r.原因 ?? r.why_zh }));
+      })
       .filter((x): x is Correction => !!x),
     phrases: arr(o.phrases)
       .map((p) => englishPair(asPair(p)))
       .filter((x): x is Pair => !!x),
-    next_zh: str(o.next_zh),
+    next_zh: cleanZh(str(o.下次試試) || str(o.next_zh)),
   };
 }
 

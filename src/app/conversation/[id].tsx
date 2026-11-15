@@ -145,7 +145,13 @@ export default function Conversation() {
           }
         },
       });
-      const r = parseTurn(out.text);
+      let r: TurnReply;
+      try {
+        r = parseTurn(out.text);
+      } catch (pe) {
+        console.warn('[turn] unusable model output:', out.text.slice(0, 600));
+        throw pe;
+      }
       history.current = [...history.current, { role: 'assistant', content: JSON.stringify(r) }];
       pushAi(r, spoke);
     } catch (e) {
@@ -222,7 +228,12 @@ export default function Conversation() {
         maxTokens: 900,
         temperature: 0.5,
       });
-      setSummary(parseSummary(out.text));
+      try {
+        setSummary(parseSummary(out.text));
+      } catch (pe) {
+        console.warn('[summary] unusable model output:', out.text.slice(0, 600));
+        throw new Error('AI 這次整理的回饋格式不對，請按「再試一次」。');
+      }
       recordTalk(scenario.id);
     } catch (e) {
       setErr((e as Error).message);

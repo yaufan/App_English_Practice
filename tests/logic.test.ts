@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schedule, buildQueue, previewInterval, newCard, countDue } from '../src/lib/srs.ts';
 import { similarity, isCloseEnough, diffWords, normalize } from '../src/lib/match.ts';
-import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem } from '../src/lib/prompts.ts';
+import { parseTurn, parseSummary, parsePassage, extractJson, partialReply, conversationSystem, cleanZh } from '../src/lib/prompts.ts';
 import { toTaiwan } from '../src/lib/zh.ts';
 import { TURN_SCHEMA, SUMMARY_SCHEMA, PASSAGE_SCHEMA } from '../src/lib/schemas.ts';
 import { DECKS } from '../src/data/decks.ts';
@@ -192,4 +192,13 @@ test('guards: unusable model output is dropped', () => {
 test('guards: long non-JSON output is an error, not a chat bubble', () => {
   assert.throws(() => parseTurn('The learner\'s input "i want latte big" is close to the goal but slightly ungrammatical. '.repeat(4)), /格式不對/);
   assert.equal(parseTurn('Sorry, can you say that again?').reply, 'Sorry, can you say that again?');
+});
+
+test('guards: stray JSON punctuation is trimmed from Chinese text', () => {
+  assert.equal(cleanZh('我有一些特別的口味。你喜歡哪種？」},'), '我有一些特別的口味。你喜歡哪種？');
+  assert.equal(cleanZh('他說「你好」'), '他說「你好」');
+  const s = parseSummary(JSON.stringify({ 整體評語: '很好', 做得好的地方: ['敢說'], corrections: [{ you_said: 'i like run', better: 'I like running.', 中文意思: '我喜歡跑步。', 原因: '要加 ing' }], phrases: [{ english: 'How much is it?', chinese: '多少錢？' }], 下次試試: '多問問題' }));
+  assert.equal(s.overall_zh, '很好');
+  assert.equal(s.corrections[0].better_zh, '我喜歡跑步。');
+  assert.equal(s.phrases[0].en, 'How much is it?');
 });

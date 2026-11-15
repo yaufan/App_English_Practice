@@ -57,14 +57,19 @@ export default function NewPassage() {
           temperature: 0.7,
           onText: (raw) => setChars(raw.length),
         });
-        return parsePassage(out.text, cat);
+        try {
+          return parsePassage(out.text, cat);
+        } catch (e) {
+          console.warn('[passage] unusable model output:', (e as Error).message, out.text.slice(0, 600));
+          throw e;
+        }
       };
       let p;
       try {
         p = await once();
       } catch (first) {
-        // a small model sometimes writes Chinese in the English fields; one retry usually fixes it
-        if (!(first as Error).message.includes('不能用')) throw first;
+        // a small model sometimes writes Chinese in the English fields or breaks the format; one retry usually fixes it
+        if ((first as Error).message.includes('模型還在處理')) throw first;
         p = await once();
       }
       addPassage(p);
