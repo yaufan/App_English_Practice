@@ -1,17 +1,38 @@
 Running on test
  > Flow 03_words
 Launch app "com.yaufan.englishpractice"... COMPLETED
-Assert that "今日對話" is visible... FAILED
+Tap on (Optional) "Wait"... WARNED
 
-Assertion is false: "今日對話" is visible
 
-Assertion '"今日對話" is visible' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.
-
-Possible causes:
-- Element selector may be incorrect - check if there are similar elements with slightly different names/properties.
-- Element may be temporarily unavailable due to loading state
-- This could be a real regression that needs to be addressed
-
-==== Debug output (logs & screenshots) ====
-
-/home/runner/.maestro/tests/2026-11-15_133005
+ Warning: Element not found: Text matching regex: Wait
+Assert that "今日對話" is visible... COMPLETED
+Tap on id: tab-words... COMPLETED
+Tap on "翻卡"... COMPLETED
+Assert that "看答案" is visible... COMPLETED
+Take screenshot 03a_flip_front... COMPLETED
+Tap on "看答案"... COMPLETED
+Assert that "你記得多少？" is visible... COMPLETED
+Take screenshot 03b_flip_back... COMPLETED
+Tap on "記得"... COMPLETED
+Tap on "看答案"... COMPLETED
+Tap on "忘了"... COMPLETED
+Tap on "看答案"... COMPLETED
+Tap on "模糊"... COMPLETED
+Take screenshot 03c_after_rating... COMPLETED
+Press back... COMPLETED
+Tap on "開口說"... COMPLETED
+Assert that "用英文說：" is visible... COMPLETED
+Take screenshot 03d_speak_front... COMPLETED
+Tap on id: mic... COMPLETED
+Take screenshot 03e_mic_pressed... COMPLETED
+Assert that "正在聽…" is not visible... COMPLETED
+Take screenshot 03f_mic_result... COMPLETED
+Tap on "想不起來，看答案"... COMPLETED
+Assert that "你記得多少？" is visible... COMPLETED
+Take screenshot 03g_speak_answer... COMPLETED
+Tap on "記得"... COMPLETED
+Press back... COMPLETED
+Tap on "列表"... COMPLETED
+Assert that "搜尋英文或中文" is visible... COMPLETED
+Take screenshot 03h_deck_list... COMPLETED
+Press back... COMPLETED

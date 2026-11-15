@@ -8,7 +8,7 @@ Tap on (Optional) "Wait"... WARNED
 Assert that "今日對話" is visible... COMPLETED
 Take screenshot 06a_need_model... COMPLETED
 Tap on id: tab-settings... COMPLETED
-Tap on id: model-qwen3.5-0.8b... COMPLETED
+Tap on id: model-qwen3.5-2b... COMPLETED
 Tap on id: model-download... COMPLETED
 Take screenshot 06b_downloading... COMPLETED
 Assert that id: model-test is visible... COMPLETED
@@ -36,16 +36,17 @@ Tap on id: hint-btn... COMPLETED
 Take screenshot 06g_hint... COMPLETED
 Tap on id: hint-btn... COMPLETED
 Tap on id: finish-btn... COMPLETED
-Assert that "整體回饋" is visible... COMPLETED
-Take screenshot 06h_summary... COMPLETED
-Press back... COMPLETED
-Tap on id: tab-listen... COMPLETED
-Tap on "請 AI 產生新短文"... COMPLETED
-Tap on "AI 工作"... COMPLETED
-Tap on "介紹語音辨識系統"... COMPLETED
-Tap on "產生短文"... COMPLETED
-Take screenshot 06i_generating... COMPLETED
-Assert that "播放全文" is visible... COMPLETED
-Tap on "顯示英文"... COMPLETED
-Tap on "顯示中文"... COMPLETED
-Take screenshot 06j_passage... COMPLETED
+Assert that "整體回饋" is visible... FAILED
+
+Assertion is false: "整體回饋" is visible
+
+Assertion '"整體回饋" is visible' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.
+
+Possible causes:
+- Element selector may be incorrect - check if there are similar elements with slightly different names/properties.
+- Element may be temporarily unavailable due to loading state
+- This could be a real regression that needs to be addressed
+
+==== Debug output (logs & screenshots) ====
+
+/home/runner/.maestro/tests/2026-11-15_145858
