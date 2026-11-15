@@ -1,0 +1,115 @@
+name: Android APK
+
+# Builds an installable APK on every push to main (or by hand), publishes it as a GitHub Release,
+# and prints a QR code that always points to the newest APK.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_NO_TELEMETRY: 1
+      VERSION_CODE: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and tests
+        run: |
+          npx tsc --noEmit
+          npm test
+
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --clean --no-install
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build release APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cd android
+          SIGN=()
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "Signing with the keystore from repository secrets"
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            SIGN=(
+              "-Pandroid.injected.signing.store.file=$RUNNER_TEMP/release.keystore"
+              "-Pandroid.injected.signing.store.password=$ANDROID_KEYSTORE_PASSWORD"
+              "-Pandroid.injected.signing.key.alias=$ANDROID_KEY_ALIAS"
+              "-Pandroid.injected.signing.key.password=$ANDROID_KEY_PASSWORD"
+            )
+          else
+            echo "No keystore secrets: signing with the project's fixed debug key (fine for personal installs)"
+          fi
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a "${SIGN[@]}"
+
+      - name: Prepare release files
+        id: files
+        run: |
+          VERSION=$(node -p "require('./app.json').expo.version")
+          TAG="v${VERSION}-build${VERSION_CODE}"
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk "out/english-practice.apk"
+          cp out/english-practice.apk "out/english-practice-${TAG}.apk"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/english-practice.apk"
+          pip install --quiet "qrcode[pil]"
+          python3 -c "import qrcode,sys; qrcode.make(sys.argv[1], box_size=10, border=2).save('out/install-qr.png')" "$URL"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.files.outputs.tag }}
+          name: 英文練習 ${{ steps.files.outputs.tag }}
+          make_latest: true
+          body: |
+            用手機掃 QR code（或開下面的連結）下載 APK 安裝。
+
+            最新版固定網址：${{ steps.files.outputs.url }}
+
+            ![安裝 QR code](https://github.com/${{ github.repository }}/releases/download/${{ steps.files.outputs.tag }}/install-qr.png)
+
+            Commit：${{ github.sha }}
+          files: |
+            out/english-practice.apk
+            out/english-practice-${{ steps.files.outputs.tag }}.apk
+            out/install-qr.png
+
+      - name: Summary
+        run: |
+          {
+            echo "## 英文練習 ${{ steps.files.outputs.tag }}"
+            echo ""
+            echo "下載（永遠是最新版）：${{ steps.files.outputs.url }}"
+            echo ""
+            echo "Release：https://github.com/${GITHUB_REPOSITORY}/releases/tag/${{ steps.files.outputs.tag }}"
+          } >> "$GITHUB_STEP_SUMMARY"
