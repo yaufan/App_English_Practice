@@ -230,6 +230,8 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
         enable_thinking: false,
         chat_template_kwargs: { enable_thinking: false },
         reasoning_format: 'auto',
+        // if the template still opens a thinking block, close it right away so the JSON answer starts at once
+        thinking_budget_tokens: 0,
         n_predict: opts.maxTokens ?? 400,
         temperature: opts.temperature ?? 0.6,
         top_p: 0.9,
