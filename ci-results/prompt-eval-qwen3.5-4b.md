@@ -4,148 +4,166 @@
 ## 對話：咖啡店點餐
 - **AI**：Hi there! What can I get for you today?
 - **我**：i want latte big
-  - **AI**：Great choice! Would you like it hot or iced?　（太棒了！你想喝熱的還是冰的？）〔32118 ms〕
-  - 提示：Iced, please. Make it cold.（請給我冰的，要冷的。）
+  - **AI**：Sure! Would you like it hot or iced?　（好的！您想要熱的還是冰的？）〔18131 ms〕
+  - 提示：Hot.（熱的。）
 - **我**：ice. and less sugar
-  - **AI**：Okay! Where would you like to get this?　（好的！你要帶走還是現在喝？）〔17365 ms〕
-  - 修正：ice. and less sugar → **Less sugar, please.**（請少放糖。）— 原句語序不自然，通常說 'Less sugar' 或 'I want less sugar'。
-  - 提示：Take it to go.（帶走。）
+  - **AI**：Okay! Do you want it for here or to go?　（好的！您是要在這裡喝，還是帶走？）〔11042 ms〕
+  - 修正：ice. and less sugar → **Less sugar, please.**（請少放糖。）— 把「and」去掉更自然；「less sugar」是常見說法。
+  - 提示：To go.（帶走。）
 - **我**：我想要外帶
-  - **AI**：Okay, I'll put it in a bag. Would you like milk or water with your drink?　（好的，我會把它裝進袋子裡。你想喝牛奶還是水？）〔19850 ms〕
-  - 修正：我想要外帶 → **I want to take it away.**（我想帶走。）— 用 'take away' 或 'to go' 更自然。
-  - 提示：Milk, please.（請給我牛奶。）
+  - **AI**：Great! May I have your name for the receipt?　（太好了！請告訴我您的名字，我要開收據。）〔11289 ms〕
+  - 修正：我想要外帶 → **I want to go.**（我要帶走。）— 用英文「to go」比較自然，不用中文。
+  - 提示：John.（約翰。）
 - **我**：how much
-  - **AI**：It is 120 New Taiwan dollars. Would you like to pay now?　（這杯是 120 元新臺幣。現在要付錢嗎？）〔19512 ms〕
-  - 修正：how much → **How much is it?**（它多少錢？）— 需要加 'is it' 來詢問價格。
-  - 提示：Yes, please.（好的，請付款。）
+  - **AI**：It's $3.50. Should I ring up the card?　（這杯是 3 塊 50。我要刷卡嗎？）〔12218 ms〕
+  - 修正：how much → **How much is it?**（這杯多錢？）— 加上「is it」語句更完整。
+  - 提示：Yes, please.（好的，請刷卡。）
 - **我**：card ok?
-  - **AI**：Sure! Do you have a card in your wallet?　（沒問題！你的錢包裡有卡嗎？）〔19888 ms〕
-  - 修正：card ok? → **Card is okay, please.**（請用卡片。）— 語法不自然，通常說 'Card is okay' 或 'Can I use a card?'。
-  - 提示：Yes, here it is.（是的，這是我的卡。）
-- **檢討**〔92350 ms〕：你今天的點餐對話很自然，聽起來很流暢！你清楚地表達了想要外帶的需求。
-  - 好：你使用了簡單的短句來說明需求。
-  - 好：你能清楚說出自己的偏好，比如少糖和外帶。
-  - 好：你的語氣很禮貌，讓人感覺很舒服。
-  - 改：i want latte big → **I want a big latte.**（我想要一杯大拿鐵。）— 加冠詞 'a' 讓句子更完整，'big' 通常放在飲料名稱後面。
-  - 改：ice. and less sugar → **Iced, please. And less sugar.**（要冰的，謝謝。而且少一點糖。）— 把 'ice' 改成 'iced' 才是形容詞，這樣語法才正確。
-  - 改：我想要外帶 → **I want to take it away.**（我要外帶。）— 在英文中，我們常用 'take away' 來說外帶。
-  - 改：card ok? → **Can I pay by card?**（我可以用卡片支付嗎？）— 用 'Can I...' 詢問比較自然，語氣也更禮貌。
-  - 句：I'd like a cup of coffee, please.（我想要一杯咖啡，謝謝。）
-  - 句：Can I have this to go?（我可以把這個帶走嗎？）
-  - 句：Could you make it without sugar?（你能不加糖做給我喝嗎？）
-  - 句：Do you accept credit cards?（你們接受信用卡嗎？）
-  - 句：How much is this, please?（這個多少錢，謝謝。）
-  - 下次：試著說完整的句子，例如 'I would like...' 或 'Could I...'，這樣會聽起來更專業一點。
+  - **AI**：Perfect! Here is your receipt. Enjoy your coffee!
+
+Thank you for coming today!
+
+Would you like anything else?　（完美！這是您的收據。請享用您的咖啡！
+
+謝謝您光顧今天！
+
+您還想點什麼嗎？）〔11704 ms，done〕
+  - 提示：No, that's all.（不，就這些了。）
+- **檢討**〔57853 ms〕：你今天很勇敢，成功點了一杯咖啡。你的表達讓對方很容易理解。
+  - 好：你很清楚說明瞭想要冰的飲料。
+  - 好：你主動提出了少糖的要求。
+  - 好：你用外帶這個詞很自然。
+  - 改：i want latte big → **I want a large latte.**（我想要一大杯拿鐵。）— 加個冠詞 'a' 會更完整。
+  - 改：我想要外帶 → **I would like to take it away.**（我想要外帶。）— 用英文回答問題會更好。
+  - 改：how much → **How much is it?**（這多少錢？）— 加上 'is it' 語法更正確。
+  - 改：card ok? → **Is card okay?**（用卡片可以嗎？）— 加個 's' 讓句子完整。
+  - 句：I'd like a large latte, please.（我想要一大杯拿鐵，謝謝。）
+  - 句：Could I have it with less sugar?（可以少糖嗎？）
+  - 句：I'd like to take it away.（我想要外帶。）
+  - 句：How much is it?（這多少錢？）
+  - 句：Can I pay by card?（可以用卡片付錢嗎？）
+  - 下次：試著說 'I'd like...' 開頭，會聽起來更禮貌。
 
 ## 對話：解釋你的 AI 專案
 - **AI**：So I heard your team built an AI tool. What does it do?
 - **我**：it find problem in ultrasound picture
-  - **AI**：That is very helpful! It looks at pictures to see sickness. What kind of pictures does it use?　（那非常有用！它看圖片來發現疾病。它用什麼樣的圖片？）〔41870 ms〕
-  - 修正：it find problem in ultrasound picture → **It finds problems in ultrasound pictures.**（它在超音波圖片裡找出問題。）— 要用動詞 find 的單數形式 is/has，且圖片通常用複數 pictures。
-  - 提示：It uses many ultrasound images from patients.（它使用來自病人的許多超音波影像。）
+  - **AI**：Oh! So it looks at pictures to find sickness?　（喔！所以它看照片來找出疾病嗎？）〔24640 ms〕
+  - 修正：it find problem in ultrasound picture → **It finds problems in ultrasound pictures.**（它在超音波照片中找出問題。）— 用 find 的過去式 found，且圖片通常用複數 pictures。
+  - 提示：Yes, it shows the doctor exactly where to look.（是的，它告訴醫師具體該看哪裡。）
 - **我**：we use ten thousand image for train
-  - **AI**：Wow, ten thousand! That is a lot. How much time did it take to learn them?　（哇，一萬張！那很多啊。花多少時間來學習它們？）〔26023 ms〕
-  - 修正：we use ten thousand image for train → **We used 10,000 images for training.**（我們用了一萬張圖片來訓練。）— 這裡用過動詞 used 表示過去；「訓練」通常用 training，而圖片應用複數 images。
-  - 提示：It took two years to collect and check them all.（花兩年時間來收集和檢查所有影像。）
+  - **AI**：Wow! You used 10,000 pictures to teach it?　（哇！你用了 10,000 張照片來教它？）〔15935 ms〕
+  - 修正：we use ten thousand image for train → **We use ten thousand images to train it.**（我們用一萬張圖片來訓練它。）— train 是動詞，要加 to；image 通常說成複數 images。
+  - 提示：Yes, we used many pictures from different patients.（是的，我們用了許多不同病患的照片。）
 - **我**：accuracy is ninety percent
-  - **AI**：Ninety percent is very high! Do you mean it gets it right almost always?　（九十分之九非常高！你指的是它幾乎總是對嗎？）〔24042 ms〕
-  - 修正：accuracy is ninety percent → **The accuracy is ninety percent.**（準確率是百分之九十。）— 這裡「準確率」通常用 The accuracy 或 just Accuracy 更自然。
-  - 提示：Yes, it is very good. But sometimes it makes mistakes.（是的，它很好。但有時會犯錯。）
+  - **AI**：That is very high! How sure is it always right?　（那非常高！它總是對嗎？有多確定？）〔10877 ms〕
+  - 提示：It is 90% correct, but sometimes it makes mistakes.（它 90% 正確，但有時會犯錯。）
 - **我**：doctor decide final
-  - **AI**：Yes, the doctor always makes the final choice. Does the AI help them see clearly first?　（是的，醫師總是最後做決定。AI 先幫他們看得很清楚嗎？）〔17742 ms〕
-  - 提示：Yes, it highlights the problem spots on the screen.（是的，它把問題區域高亮顯示在螢幕上。）
+  - **AI**：Yes! The doctor makes the final choice.　（沒錯！醫師做最後決定。）〔12926 ms〕
+  - 修正：doctor decide final → **The doctor decides the final answer.**（醫師做最終決定。）— decide 是動詞，主語 The doctor 後面要加 s；加上 final answer 更完整。
+  - 提示：Exactly. It suggests, but the doctor confirms.（沒錯。它提建議，但醫師確認。）
 - **我**：yes we use in hospital now
-  - **AI**：Great! How many doctors use it every day?　（太棒了！每天有多少位醫師使用它？）〔12994 ms〕
-  - 提示：About fifty doctors use it every morning.（大約有五十位醫師每天早上使用。）
-- **檢討**〔96008 ms〕：你很清楚地向夥伴介紹了這個 AI 工具。你的回答很簡短，但意思很清楚。
-  - 好：你用了簡單的詞來解釋複雜的技術。
-  - 好：你直接回答了關於資料和準確率的問題。
-  - 好：你保持對話流暢，沒有太多停頓。
-  - 改：it find problem in ultrasound picture → **It finds problems in the ultrasound picture.**（它在超音波圖片中尋找問題。）— 句子需要動詞原形加 's' 表示第三人稱單數，並加上冠詞。
-  - 改：we use ten thousand image for train → **We use ten thousand images for training.**（我們用一萬張圖片進行訓練。）— 'Image' 是可數名詞，複數形式是 'images'；'train' 這裡應用作動名詞 'training'。
-  - 改：accuracy is ninety percent → **The accuracy is ninety percent.**（準確度是百分之九十。）— 通常需要在 'accuracy' 前面加上定冠詞 'The' 來特指這個資料。
-  - 改：doctor decide final → **The doctor makes the final decision.**（醫生做出最終決定。）— 'decide' 是動詞，這裡需要 'makes the final decision' 這個固定搭配來表達。
-  - 句：It helps doctors see clearly.（它幫助醫生看得更清楚。）
-  - 句：We use it in hospitals now.（我們現在在醫院使用它。）
-  - 句：The accuracy is ninety percent.（準確度是百分之九十。）
-  - 句：It finds problems in pictures.（它在圖片中找到問題。）
-  - 句：The doctor makes the final choice.（醫生做出最終選擇。）
-  - 下次：試著說完整的句子，例如 'It finds problems in pictures.' 而不是隻說幾個詞。
+  - **AI**：Great! Are all doctors using it now?　（太好了！所有醫師都在用嗎？）〔9007 ms〕
+  - 提示：No, only in some emergency rooms for now.（目前只在部分急診室使用。）
+- **檢討**〔59658 ms〕：你很清楚說明瞭 AI 工具的功能。你的英文很流暢，聽起來很自然。
+  - 好：你用了簡單清楚的單字。
+  - 好：你的語氣很自信且友好。
+  - 好：你正確表達了數字和百分比。
+  - 改：it find problem in ultrasound picture → **it finds problems in the ultrasound picture**（它在超音波照片中找出問題）— 主詞是 it，動詞要用第三人稱單數 finds。
+  - 改：we use ten thousand image for train → **we use ten thousand images to train**（我們用一萬張圖片來訓練它）— 圖片要用複數 images；用 to train 更自然。
+  - 改：accuracy is ninety percent → **the accuracy is ninety percent**（準確度是百分之九十）— 這裡需要冠詞 the 來指代特定的準確度。
+  - 改：doctor decide final → **the doctor makes the final decision**（醫生做最後的決定）— 動詞要變成 makes；decision 比 final 更常用於決定。
+  - 句：It helps doctors find sick people.（它幫助醫生找出生病的人。）
+  - 句：The tool uses medical data.（這個工具使用醫療資料。）
+  - 句：It is very accurate in most cases.（它在大多數情況下非常準確。）
+  - 句：Doctors use it to check patients.（醫生用它來檢查病人。）
+  - 句：We hope it will help many hospitals.（我們希望它能幫助許多醫院。）
+  - 下次：試著說完整的句子，不要只說幾個單字。
 
 ## 對話：多益口說：回答問題
 - **AI**：Imagine a friend is asking you about your free time. How often do you exercise, and where do you usually do it?
 - **我**：i exercise two time one week in park
-  - **AI**：That is good. Do you play any sports with friends?　（很好喔。你會和朋友一起運動嗎？）〔41199 ms〕
-  - 修正：i exercise two time one week in park → **I exercise twice a week in the park.**（我每週在公園運動兩次。）— 「twice」比「two time」更自然；加一點冠詞。
-  - 提示：Yes, I play basketball with my friends on weekends.（是的，我週末和朋友打籃球。）
+  - **AI**：Good! Do you go alone or with friends?　（很好！你是自己一個人去，還是和朋友一起？）〔24211 ms〕
+  - 修正：i exercise two time one week in park → **I exercise twice a week at the park.**（我每週運動兩次，在公園。）— times 用 twice；in 改 at。
+  - 提示：Usually with my family or friends.（通常和家人或朋友一起去。）
 - **我**：because it near my home and free
-  - **AI**：That makes sense. What kind of sports do you usually play?　（這很有道理。你通常玩哪種運動？）〔21954 ms〕
-  - 修正：because it near my home and free → **Because it is near my home and free.**（因為它離我家近且很自由。）— 需要完整的句子結構，加上 be 動詞 is。
-  - 提示：I like playing tennis or jogging in the morning.（我喜歡打網球或早上慢跑。）
+  - **AI**：That makes sense. Do you walk or run when you go to the park?　（這很合理。你去公園是走路還是跑步？）〔14912 ms〕
+  - 修正：because it near my home and free → **Because it is close to my home and free.**（因為它離我家裡很近，而且很放鬆。）— 加 was/is；free 作形容詞前需加 is。
+  - 提示：I walk slowly. It is easy on my legs.（我慢慢走。對腿比較輕鬆。）
 - **我**：i like run
-  - **AI**：That's great! Do you prefer running alone or with others?　（很好！你喜歡獨自跑步還是和別人一起跑？）〔22214 ms〕
-  - 修正：i like run → **I like to run.**（我喜歡跑步。）— 「like」後面通常加「to」或動詞的-ing形式，這裡用「to run」很自然。
-  - 提示：I prefer running alone in the morning for quiet time.（我比較喜歡早上獨自跑步，因為很安靜。）
+  - **AI**：That's great! Do you like running in the morning or the evening?　（那很棒！你是喜歡早上跑步，還是晚上？）〔13520 ms〕
+  - 修正：i like run → **I like to run.**（我喜歡跑步。）— run 是動詞，前面加 to。
+  - 提示：I like running in the morning. It makes me energetic.（我喜歡早上跑步。讓我充滿活力。）
 - **我**：in morning before work
-  - **AI**：That is a good habit. What time do you usually start running?　（這是很好的習慣。你通常什麼時候開始跑步？）〔22616 ms〕
-  - 修正：in morning before work → **I run in the morning before work.**（我在上班前早上跑步。）— 這句話需要一個主詞，比如「I」，讓句子更完整。
-  - 提示：I start at 7:00 AM every day to stay energetic.（我每天都七點開始，為了保持精力充沛。）
-- **檢討**〔76103 ms〕：你回答得很清楚，對方能聽懂你的意思。我們練習瞭如何自然地問問題，做得很好。
-  - 好：You used simple words clearly.
-  - 好：You answered all the questions easily.
-  - 好：You kept the conversation going well.
-  - 改：i exercise two time one week in park → **I exercise twice a week in the park.**（我每週練兩次，在公園裡。）— Use 'twice' for two times. Add 'the' before park.
-  - 改：because it near my home and free → **Because it is near my home and free.**（因為它離我家近且免費。）— Add 'is' to make the sentence complete.
-  - 改：i like run → **I like running.**（我喜歡跑步。）— After 'like', use the verb form 'running'.
-  - 句：How often do you...?（...你多久做一次？）
-  - 句：It is near my home.（它離我家很近。）
-  - 句：I like doing...（我喜歡做...）
-  - 句：When do you usually...?（你通常什麼時候...？）
-  - 句：That is a good habit.（那是個好習慣。）
-  - 下次：Try to say 'twice' instead of 'two times' next time.
+  - **AI**：Perfect! Do you listen to music while you run?　（完美！你跑步時會聽音樂嗎？）〔13966 ms〕
+  - 修正：in morning before work → **In the morning, before work.**（在早上，工作前。）— 加 the；時序先說時間再說動作較自然。
+  - 提示：Yes, I listen to pop music. It helps me relax.（是的，我聽流行音樂。幫我放鬆。）
+- **檢討**〔49426 ms〕：You spoke clearly about your exercise habits. You asked good questions about your friend.
+  - 好：You answered the questions simply and fast.
+  - 好：You used 'in morning' to show time well.
+  - 好：You kept talking after every answer.
+  - 改：i exercise two time one week in park → **I exercise twice a week in the park.**（我每週去公園運動兩次。）— 'twice' is better than 'two time'. Add 'the' before 'park'.
+  - 改：because it near my home and free → **Because it is near my home and free.**（因為它離我家很近而且很自由。）— Add 'is' after 'it'. Start with 'Because'.
+  - 改：i like run → **I like running.**（我喜歡跑步。）— Use 'running', not 'run', after 'like'.
+  - 句：How often do you...?（你……多久做一次？）
+  - 句：I usually... in the morning.（我通常在早上……）
+  - 句：That makes sense.（有道理。）
+  - 句：Do you like...?（你喜歡……嗎？）
+  - 句：It is free and near home.（那裡很自由且靠近家。）
+  - 下次：Try to say 'twice' instead of 'two time' for time.
 
 ## 對話：自由聊天：週末去哪裡玩
-- **AI**：Hi! What are you doing this weekend?　（嗨！週末你在做什麼？）〔28416 ms〕
+- **AI**：Hi! How was your weekend?　（嗨！你的週末過得怎樣？）〔17907 ms〕
 - **我**：i go to mountain last weekend
-  - **AI**：Oh, that sounds great! Did you climb a high mountain?　（喔，聽起來很棒！你爬高山嗎？）〔18499 ms〕
-  - 修正：i go to mountain last weekend → **I went to the mountains last weekend.**（我上週末去了山區。）— 過去用 went；加 the 或 the mountains 比較自然。
-  - 提示：Yes, it was very beautiful and fresh air.（是的，非常漂亮且空氣清新。）
+  - **AI**：Oh, that sounds great! Did you hike or just walk?　（喔，那聽起來很棒！你是去爬山還是隻是走路？）〔12606 ms〕
+  - 修正：i go to mountain last weekend → **I went to the mountain last weekend.**（我上週六去了山區。）— 過去式要用 went；加上 the 比較自然。
+  - 提示：I walked up the mountain. It was easy.（我走上了一座山。那很容易。）
 - **我**：it is very beautiful but tired
-  - **AI**：That makes sense. Did you take many photos?　（這很合理。你拍了很多照片嗎？）〔20654 ms〕
-  - 修正：it is very beautiful but tired → **It was very beautiful, but I was tired.**（那裡很美，但我累了。）— 過去用 was；tired 是形容人，前面要加 I。
-  - 提示：Yes, I took about fifty pictures.（是的，我拍了大約五十張。）
+  - **AI**：Wow, nice views! Did you see a waterfall?　（哇，景色很美！你看到瀑布了嗎？）〔13988 ms〕
+  - 修正：it is very beautiful but tired → **It was very beautiful, but I was tired.**（那裡非常美，但我累了。）— 週末要用過去式 be；累也要用 was。
+  - 提示：Yes, we saw a big waterfall. It was huge.（是的，我們看到了大瀑布。它很大。）
 - **我**：with my family
-  - **AI**：That's nice. Did you eat together at a restaurant?　（真棒。你們在餐廳一起吃過嗎？）〔14387 ms〕
-  - 提示：Yes, we went to a small cafe.（是的，我們去了一家小咖啡廳。）
-- **檢討**〔56661 ms〕：你分享了很棒的週末經歷！你的英語聽起來很自然。
-  - 好：你用了簡單的問句來繼續對話。
-  - 好：你的語氣很放鬆，讓人想聽下去。
-  - 好：你清楚地表達了去山上的意思。
-  - 改：i go to mountain last weekend → **I went to the mountain last weekend.**（我上週末去了那座山。）— 去過去的事情要用 'went'，而且 'mountain' 前面要加 'the'。
-  - 改：it is very beautiful but tired → **It was very beautiful, but I was tired.**（它很美，但我累了。）— 上週末的事情要用過去式 'was' 和 'was'。
-  - 句：It was a great trip.（這是一次很棒的路程。）
-  - 句：I had a wonderful time.（我過得很開心。）
-  - 句：We took many photos together.（我們一起拍了很多照片。）
-  - 句：It was delicious.（很好吃。）
-  - 句：Did you enjoy the view?（你喜歡那景色嗎？）
-  - 下次：下次試著說 'I went' 來表達過去發生的事情。
+  - **AI**：That's nice! Was it fun for everyone?　（那很好！大家玩得開心嗎？）〔8951 ms〕
+  - 提示：Yes, my family had a great time.（是的，我家人玩得很開心。）
+- **檢討**〔45477 ms〕：You talked about your weekend clearly and shared good feelings. Your English is simple but very natural today.
+  - 好：You used simple past tense correctly.
+  - 好：You asked a follow-up question naturally.
+  - 好：Your voice sounds happy and relaxed.
+  - 改：i go to mountain last weekend → **I went to the mountain last weekend**（我上週去爬山了）— Past tense needs 'went' and 'the' before mountain.
+  - 改：it is very beautiful but tired → **It was very beautiful, but I was tired.**（它很美，但我累了）— Past events need 'was' and the subject 'I'.
+  - 句：How was your weekend?（你的週末過得怎麼樣？）
+  - 句：Did you have fun?（你玩得開心嗎？）
+  - 句：What did you do?（你做了什麼？）
+  - 句：I went hiking with my family.（我和家人一起去爬山了。）
+  - 句：It was beautiful but tiring.（它很美但很累人。）
+  - 下次：Try to use 'was' or 'were' for past events.
 
 ## AI 產生聽力短文（AI 工作／介紹語音辨識系統）
-〔75033 ms〕**醫院的語音助手**（Hospital Voice Assistant）
-- Dr. Lee has a new idea.　（李醫生有個新想法。）
-- She wants to use voice AI.　（她想用語音人工智慧。）
-- The system speaks very fast.　（這個系統說話很快。）
-- It helps doctors write notes.　（它幫助醫生寫筆記。）
-- Doctors speak clearly to it.　（醫生清楚說話給它聽。）
-- The machine understands Chinese well.　（機器很懂中文。）
-- Q1 What does the AI help doctors do?（AI 幫助醫生做什麼？）答案：B. Write notes
-- Q2 How does the doctor talk to the AI?（醫生跟 AI 怎麼說話？）答案：C. Very clear
-- Q3 What language does the system understand?（系統懂什麼語言？）答案：C. Chinese
+〔73676 ms〕**醫院的語音系統**（The Hospital Voice System）
+- Our team works in a big hospital.　（我們的團隊在一家大醫院工作。）
+- We build an AI voice system.　（我們建立一個語音人工智慧系統。）
+- Doctors speak to the computer.　（醫生對著電腦說話。）
+- The computer hears their words clearly.　（電腦清楚地聽到他們的話。）
+- It helps doctors write reports fast.　（它幫助醫生快速寫報告。）
+- Many vendors want to sell this tool.　（很多供應商想賣這個工具。）
+- We choose the best voice software.　（我們選擇最好的語音軟體。）
+- Q1 What does the AI system do?（這個人工智慧系統做什麼？）答案：A. It writes medical reports for doctors.
+- Q2 How many vendors want to sell the tool?（多少家供應商想賣這個工具？）答案：C. Many vendors.
+- Q3 Who uses the voice system?（誰使用這個語音系統？）答案：C. The doctors mainly.
 
 ## 統計
-- 產生 4567 個 token，共 817 秒
-- 模型原始輸出含簡體字的次數：0（App 會自動轉成繁體）
+- 產生 4499 個 token，共 544 秒
+- 模型原始輸出含簡體字的次數：2（App 會自動轉成繁體）
 ## 發現的問題
+- cafe: 一次講太多句（5 句）：Perfect! Here is your receipt. Enjoy your coffee!
+
+Thank you for coming today!
+
+Would you like anything else?
+- explain-project: 沒有用問句接話：Yes! The doctor makes the final choice.
+- toeic-qa: overall_zh 沒有中文
 - toeic-qa: 檢討 why_zh 沒有中文
 - toeic-qa: 檢討 why_zh 沒有中文
 - toeic-qa: 檢討 why_zh 沒有中文
+- free: overall_zh 沒有中文
+- free: 檢討 why_zh 沒有中文
+- free: 檢討 why_zh 沒有中文

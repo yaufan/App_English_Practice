@@ -4,4 +4,4 @@ install exit=0
 03_words exit=0
 04_listening exit=0
 05_settings exit=0
-06_model exit=1
+06_model exit=0
