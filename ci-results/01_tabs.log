@@ -1,0 +1,20 @@
+Anonymous analytics enabled. To opt out, set MAESTRO_CLI_NO_ANALYTICS environment variable to any value before running Maestro.
+
+Running on test
+ > Flow 01_tabs
+Launch app "com.yaufan.englishpractice" with clear state... COMPLETED
+Assert that "今日對話" is visible... COMPLETED
+Wait for animation to end... COMPLETED
+Take screenshot 01a_today... COMPLETED
+Tap on id: tab-talk... COMPLETED
+Assert that "口說對話" is visible... COMPLETED
+Take screenshot 01b_talk... COMPLETED
+Tap on id: tab-words... COMPLETED
+Assert that "單字片語" is visible... COMPLETED
+Take screenshot 01c_words... COMPLETED
+Tap on id: tab-listen... COMPLETED
+Assert that "請 AI 產生新短文" is visible... COMPLETED
+Take screenshot 01d_listen... COMPLETED
+Tap on id: tab-settings... COMPLETED
+Assert that "Claude API 金鑰" is visible... COMPLETED
+Take screenshot 01e_settings... COMPLETED

@@ -1,0 +1,25 @@
+Running on test
+ > Flow 05_settings
+Launch app "com.yaufan.englishpractice"... COMPLETED
+Assert that "今日對話" is visible... COMPLETED
+Tap on id: tab-settings... COMPLETED
+Tap on id: key-input... COMPLETED
+Input text sk-ant-invalid-test-key... COMPLETED
+Hide Keyboard... COMPLETED
+Tap on "儲存並測試"... COMPLETED
+Assert that "API 金鑰無效.*" is visible... COMPLETED
+Take screenshot 05a_bad_key... COMPLETED
+Tap on "稍慢"... FAILED
+
+Element not found: Text matching regex: 稍慢
+
+Element with Text matching regex: 稍慢 not found. Check the UI hierarchy in debug artifacts to verify if the element exists.
+
+Possible causes:
+- Element selector may be incorrect - check if there are similar elements with slightly different names/properties.
+- Element may be temporarily unavailable due to loading state.
+- This could be a real regression that needs to be addressed.
+
+==== Debug output (logs & screenshots) ====
+
+/home/runner/.maestro/tests/2026-11-15_124231

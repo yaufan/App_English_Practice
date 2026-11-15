@@ -1,0 +1,23 @@
+Running on test
+ > Flow 02_conversation
+Launch app "com.yaufan.englishpractice"... COMPLETED
+Assert that "今日對話" is visible... COMPLETED
+Tap on id: tab-talk... COMPLETED
+Tap on "咖啡店點餐"... COMPLETED
+Assert that "先熟悉這幾句" is visible... COMPLETED
+Tap on id: speak... COMPLETED
+Assert that "開始對話" is visible... COMPLETED
+Take screenshot 02a_cafe_intro... COMPLETED
+Press back... COMPLETED
+Tap on id: topic-input... COMPLETED
+Input text weekend plans... COMPLETED
+Hide Keyboard... COMPLETED
+Tap on "開始"... COMPLETED
+Assert that "自由聊天：weekend plans" is visible... COMPLETED
+Take screenshot 02b_free_intro... COMPLETED
+Press back... COMPLETED
+Scrolling DOWN until "雅思口說 Part 1" is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "雅思口說 Part 1"... COMPLETED
+Assert that "先熟悉這幾句" is visible... COMPLETED
+Take screenshot 02c_ielts_intro... COMPLETED
+Press back... COMPLETED
