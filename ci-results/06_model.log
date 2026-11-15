@@ -12,50 +12,26 @@ Tap on id: model-qwen3.5-2b... COMPLETED
 Tap on id: model-download... COMPLETED
 Take screenshot 06b_downloading... COMPLETED
 Assert that id: model-test is visible... COMPLETED
-Tap on id: model-test... COMPLETED
-Assert that "可以用了！.*" is visible... COMPLETED
-Take screenshot 06c_model_test... COMPLETED
-Tap on id: tab-talk... COMPLETED
-Tap on "咖啡店點餐"... COMPLETED
-Tap on "開始對話"... COMPLETED
-Assert that ".*What can I get for you today.*" is visible... COMPLETED
-Tap on id: chat-input... COMPLETED
-Input text i want latte big... COMPLETED
-Hide Keyboard... COMPLETED
-Tap on id: send-btn... COMPLETED
-Take screenshot 06d_thinking... COMPLETED
-Assert that id: ai-1 is visible... COMPLETED
-Take screenshot 06e_turn1... COMPLETED
-Tap on id: chat-input... COMPLETED
-Input text ice please and to go... COMPLETED
-Hide Keyboard... COMPLETED
-Tap on id: send-btn... COMPLETED
-Assert that id: ai-2 is visible... COMPLETED
-Take screenshot 06f_turn2... COMPLETED
-Tap on id: hint-btn... COMPLETED
-Take screenshot 06g_hint... COMPLETED
-Tap on id: hint-btn... COMPLETED
-Tap on id: finish-btn... COMPLETED
-Assert that "整體回饋" is visible... COMPLETED
-Take screenshot 06h_summary... COMPLETED
-Press back... COMPLETED
-Tap on id: tab-listen... COMPLETED
-Tap on "請 AI 產生新短文"... COMPLETED
-Tap on "AI 工作"... COMPLETED
-Tap on "介紹語音辨識系統"... COMPLETED
-Tap on "產生短文"... COMPLETED
-Take screenshot 06i_generating... COMPLETED
-Assert that "播放全文" is visible... FAILED
-
-Assertion is false: "播放全文" is visible
-
-Assertion '"播放全文" is visible' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.
-
-Possible causes:
-- Element selector may be incorrect - check if there are similar elements with slightly different names/properties.
-- Element may be temporarily unavailable due to loading state
-- This could be a real regression that needs to be addressed
-
+Tap on id: model-test...
 ==== Debug output (logs & screenshots) ====
 
-/home/runner/.maestro/tests/2026-11-15_154929
+/home/runner/.maestro/tests/2026-11-15_163446
+Exception in thread "Thread-5" java.io.IOException: Command failed (host:transport:emulator-5554): device 'emulator-5554' not found
+	at dadb.adbserver.AdbServer.send$dadb(AdbServer.kt:103)
+	at dadb.adbserver.AdbServerDadb.open(AdbServer.kt:148)
+	at dadb.Dadb$DefaultImpls.openShell(Dadb.kt:42)
+	at dadb.adbserver.AdbServerDadb.openShell(AdbServer.kt:122)
+	at dadb.Dadb$DefaultImpls.shell(Dadb.kt:35)
+	at dadb.adbserver.AdbServerDadb.shell(AdbServer.kt:122)
+	at maestro.android.AndroidDeviceConnection.shell(AndroidDeviceConnection.kt:153)
+	at maestro.drivers.AndroidDriver.shell(AndroidDriver.kt:1352)
+	at maestro.drivers.AndroidDriver.isPackageInstalled(AndroidDriver.kt:1335)
+	at maestro.drivers.AndroidDriver.bestEffortUninstall(AndroidDriver.kt:1310)
+	at maestro.drivers.AndroidDriver.uninstallMaestroDriverApp$lambda$89(AndroidDriver.kt:1296)
+	at maestro.utils.Metrics.measured(Metrics.kt:48)
+	at maestro.drivers.AndroidDriver.uninstallMaestroDriverApp(AndroidDriver.kt:1295)
+	at maestro.drivers.AndroidDriver.close(AndroidDriver.kt:182)
+	at maestro.Maestro.close(Maestro.kt:606)
+	at maestro.cli.session.MaestroSessionManager$MaestroSession.close(MaestroSessionManager.kt:471)
+	at maestro.cli.session.MaestroSessionManager.newSession$lambda$2(MaestroSessionManager.kt:129)
+	at kotlin.concurrent.ThreadsKt$thread$thread$1.run(Thread.kt:30)
