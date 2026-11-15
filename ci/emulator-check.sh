@@ -8,6 +8,7 @@ APK=android/app/build/outputs/apk/release/app-release.apk
 
 adb install -r "$APK" > "$OUT/install.txt" 2>&1
 echo "install exit=$?" >> "$OUT/summary.txt"
+adb logcat -G 16M > /dev/null 2>&1
 adb logcat -c
 touch "$OUT/.start"
 
@@ -34,10 +35,13 @@ else
 fi
 
 adb logcat -d > "$OUT/logcat.txt" 2>&1
+adb logcat -b crash -d > "$OUT/logcat-crash.txt" 2>&1
 grep -nE "FATAL EXCEPTION|AndroidRuntime: |ReactNativeJS|ExceptionsManager|com.yaufan.englishpractice.*(crash|Crash|died)" "$OUT/logcat.txt" > "$OUT/logcat-errors.txt" || true
 # never keep anything that could contain the key
 grep -v "sk-ant" "$OUT/logcat.txt" > "$OUT/logcat.tmp" && mv "$OUT/logcat.tmp" "$OUT/logcat.txt"
-find . -path ./node_modules -prune -o -path "./$OUT" -prune -o -name "*.png" -newer "$OUT/.start" -print | while read -r f; do mv "$f" "$OUT/shots/"; done
+# Maestro may save takeScreenshot files in the working dir or under ~/.maestro; collect ours by name.
+find "$HOME" /tmp \( -path "$PWD/node_modules" -o -path "$PWD/android" -o -path "$PWD/$OUT" \) -prune -o \
+  -type f -name "0[1-6][a-z]_*.png" -newer "$OUT/.start" -print 2>/dev/null | while read -r f; do cp "$f" "$OUT/shots/"; done
 rm -f "$OUT/.start"
 ls -la "$OUT" "$OUT/shots"
 exit 0

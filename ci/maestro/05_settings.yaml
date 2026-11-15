@@ -15,6 +15,9 @@ appId: com.yaufan.englishpractice
     visible: "API 金鑰無效.*"
     timeout: 40000
 - takeScreenshot: 05a_bad_key
+- scrollUntilVisible:
+    element: "稍慢"
+    direction: DOWN
 - tapOn: "稍慢"
 - scrollUntilVisible:
     element: "清除學習紀錄"
